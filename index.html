@@ -270,6 +270,19 @@
       grid-row: 3;
     }
 
+    .run-card-right{
+      grid-column: 4 / span 3;
+      grid-row: 2;
+
+      background:#f5f2dc;
+      border:1px solid #c7bfa0;
+      color:#000;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size:14px;
+      padding:12px;
+      min-height:140px;
+    }
+
     @media (max-width: 900px) {
       .officer-card,
       .weather-card {
@@ -780,7 +793,13 @@
             </div>
           </div>
         </div>
-
+        
+       <div class="card run-card-right">
+        <div id="runNoticeText">
+         Awaiting noon report…
+        </div>
+      </div>
+      ``
         <div class="card weather-card">
           <div class="label">Weather</div>
           <div class="weather-head">
@@ -1880,6 +1899,75 @@ function updateEngineWidget(displayedShipClock){
 }
 
 /* =========================
+   DAILY RUN NOTICES (POSTED AT NOON)
+========================= */
+
+const RUN_NOTICES = {
+  "1912-04-11": `
+    <strong>Thursday 11 April 1912</strong><br><br>
+    <strong>RMS TITANIC — DAILY RUN</strong><br><br>
+    Run from noon yesterday: 484 nautical miles<br>
+    Distance from Southampton: 484 nautical miles<br><br>
+    Clocks will be set back tonight by 1 hour 24 minutes.
+  `,
+
+  "1912-04-12": `
+    <strong>Friday 12 April 1912</strong><br><br>
+    <strong>RMS TITANIC — DAILY RUN</strong><br><br>
+    Run from noon yesterday: 519 nautical miles<br>
+    Distance from Southampton: 1,003 nautical miles<br><br>
+    Clocks will be set back tonight by 49 minutes.
+  `,
+
+  "1912-04-13": `
+    <strong>Saturday 13 April 1912</strong><br><br>
+    <strong>RMS TITANIC — DAILY RUN</strong><br><br>
+    Run from noon yesterday: 546 nautical miles<br>
+    Distance from Southampton: 1,549 nautical miles<br><br>
+    Clocks will be set back tonight by 45 minutes.
+  `,
+
+  "1912-04-14": `
+    <strong>Sunday 14 April 1912</strong><br><br>
+    <strong>RMS TITANIC — DAILY RUN</strong><br><br>
+    Run from noon yesterday: 546 nautical miles<br>
+    Distance from Southampton: 2,095 nautical miles<br><br>
+    Clocks will be set back tonight by 47 minutes.
+  `
+};
+
+let lastRunNoticeKey = null;
+
+function updateRunNotice(displayedShipClock){
+  try{
+    const y = displayedShipClock.getUTCFullYear();
+    const m = String(displayedShipClock.getUTCMonth() + 1).padStart(2,'0');
+    const d = String(displayedShipClock.getUTCDate()).padStart(2,'0');
+    const key = `${y}-${m}-${d}`;
+
+    const noticeEl = document.getElementById("runNoticeText");
+    if(!noticeEl) return;
+
+    // Before noon → placeholder only
+    if(displayedShipClock.getUTCHours() < 12){
+      noticeEl.textContent = "Awaiting noon report…";
+      lastRunNoticeKey = null;
+      return;
+    }
+
+    // After noon → post today's notice once
+    if(RUN_NOTICES[key] && key !== lastRunNoticeKey){
+      noticeEl.innerHTML = RUN_NOTICES[key];
+      lastRunNoticeKey = key;
+    }
+
+  }catch(e){
+    console.warn("Run notice skipped:", e);
+  }
+}
+``
+
+/* =========================
    MAP SETUP
 ========================= */
 
@@ -2206,6 +2294,7 @@ function samplePortal(){
   updateWeatherWidget(displayedShipClock);
   updateWirelessWidget(displayedShipClock);
   updateEngineWidget(displayedShipClock);
+  updateRunNotice(displayedShipClock);
 
   actualLine.setLatLngs(wake);
   plannedLine.setLatLngs(planned);
