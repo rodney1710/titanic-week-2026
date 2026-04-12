@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Titanic Week 2026 Live Tracker</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    :root{
+      --bg:#0f131a;
+      --panel:#171d26;
+      --panel-2:#11161d;
+      --line:#3a3326;
+      --line-soft:#2b313b;
+      --ink:#e7dfcf;
+      --muted:#b8b1a2;
+      --faint:#8e98a8;
+      --brass:#c7a968;
+      --brass-soft:#9b8352;
+      --signal:#b23434;
+      --signal-bright:#df4747;
+      --sea:#6fb6ff;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top, #182230 0%, #0f131a 48%, #0b0e13 100%);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    .wrap {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 14px 16px 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      font-family: Georgia, "Times New Roman", serif;
+      color: #efe5cb;
+    }
+
+    .subtitle {
+      margin: 4px 0 14px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: linear-gradient(180deg, #8c1f1f, #681818);
+      color: #f7f1e3;
+      border: 1px solid #8f6a30;
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+    }
+
+    button.secondary {
+      background: linear-gradient(180deg, #2b3442, #1a202a);
+      border-color: #4a5568;
+      color: #f0eadb;
+    }
+
+    button.active {
+      box-shadow:
+        inset 0 0 0 2px var(--brass),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .speed-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #d7dce5;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    .speed-wrap input[type="range"]{
+      width: 150px;
+      accent-color: var(--brass);
+      cursor: pointer;
+    }
+
+    .status-note{
+      font-size:12px;
+      color:var(--muted);
+      margin-left: 4px;
+    }
+
+    .ops-layout {
+      display: grid;
+      grid-template-columns: minmax(560px, 1.02fr) minmax(640px, 1.28fr);
+      grid-template-rows: auto auto;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .nav-group {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .lower-left {
+      grid-column: 1;
+      grid-row: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .map-group {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    @media (max-width: 1400px) {
+      .ops-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+
+      .nav-group {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .lower-left {
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      .map-group {
+        grid-column: 1;
+        grid-row: 3;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .lower-left {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .group {
+      background: linear-gradient(180deg, rgba(26,33,44,0.98), rgba(18,23,31,0.98));
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 20px rgba(0,0,0,0.18);
+      min-width: 0;
+    }
+
+    .group-title {
+      margin: 0 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: #e3c98f;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0,1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 1500px) {
+      .nav-grid {
+        grid-template-columns: repeat(4, minmax(0,1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .nav-grid {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .nav-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .single-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      height: 100%;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), #131922);
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
+      padding: 10px 12px;
+      min-width: 0;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+
+    .label {
+      font-size: 11px;
+      color: #ead9ad;
+      margin-bottom: 6px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .value {
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.35;
+      color: #d8ddd8;
+      word-break: break-word;
+    }
+
+    .officer-card {
+      grid-column: span 2;
+    }
+
+    .weather-card {
+      grid-column: span 2;
+    }
+
+    @media (max-width: 900px) {
+      .officer-card,
+      .weather-card {
+        grid-column: span 1;
+      }
+    }
+
+    .officer-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .officer-photo {
+      width: 78px;
+      height: 102px;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 8px;
+      border: 1px solid #3b4048;
+      background: #0f141b;
+      flex: 0 0 auto;
+      display: block;
+    }
+
+    .officer-fallback {
+      width: 78px;
+      height: 102px;
+      border-radius: 8px;
+      border: 1px solid #3b4048;
+      background: linear-gradient(180deg, #1c222b, #10151c);
+      color: #d7dce5;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.2;
+      padding: 8px;
+      box-sizing: border-box;
+      flex: 0 0 auto;
+      white-space: pre-line;
+    }
+
+    .officer-meta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .officer-rank {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f4ead1;
+      line-height: 1.15;
+    }
+
+    .officer-name {
+      font-size: 13px;
+      color: #d7dce5;
+      line-height: 1.2;
+    }
+
+    .officer-watch {
+      font-size: 12px;
+      color: #c0c8d2;
+      line-height: 1.2;
+    }
+
+    .officer-sub {
+      font-size: 11px;
+      color: var(--faint);
+      line-height: 1.2;
+    }
+
+    .officer-stripes {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 2px 0 1px;
+      min-height: 22px;
+    }
+
+    .rank-svg {
+      display: block;
+      width: 80px;
+      height: 22px;
+    }
+
+    .watch-team {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    .watch-team-label {
+      font-size: 11px;
+      color: var(--faint);
+      line-height: 1.2;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .watch-team-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .watch-team-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .watch-subcard {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      background: linear-gradient(180deg, #11161d, #0f141a);
+      border: 1px solid #252c35;
+      border-radius: 8px;
+      padding: 7px;
+      min-width: 0;
+    }
+
+    .watch-subimg {
+      width: 48px;
+      height: 62px;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 6px;
+      border: 1px solid #2f3640;
+      background: #0f141b;
+      flex: 0 0 auto;
+      display: block;
+    }
+
+    .watch-subfallback {
+      width: 48px;
+      height: 62px;
+      border-radius: 6px;
+      border: 1px solid #2f3640;
+      background: linear-gradient(180deg, #1c222b, #10151c);
+      color: #d7dce5;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 10px;
+      line-height: 1.15;
+      padding: 5px;
+      box-sizing: border-box;
+      flex: 0 0 auto;
+      white-space: pre-line;
+    }
+
+    .watch-submeta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .watch-subrank {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f4ead1;
+      line-height: 1.15;
+    }
+
+    .watch-subname {
+      font-size: 11px;
+      color: #d7dce5;
+      line-height: 1.2;
+    }
+
+    .watch-substripes {
+      display: flex;
+      align-items: center;
+      min-height: 16px;
+      margin-top: 1px;
+    }
+
+    .rank-svg-small {
+      display: block;
+      width: 56px;
+      height: 16px;
+    }
+
+    .weather-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .weather-bigicon {
+      font-size: 20px;
+      line-height: 1;
+      flex: 0 0 auto;
+      margin-top: 1px;
+    }
+
+    .weather-meta {
+      min-width: 0;
+    }
+
+    .weather-short {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f4ead1;
+      line-height: 1.2;
+    }
+
+    .weather-detail {
+      font-size: 12px;
+      color: #d7dce5;
+      line-height: 1.35;
+      margin-top: 4px;
+    }
+
+    .wireless-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .wireless-meta {
+      min-width: 0;
+    }
+
+    .wireless-time {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f4ead1;
+      line-height: 1.2;
+    }
+
+    .wireless-route {
+      font-size: 12px;
+      color: #cbd3df;
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+
+    .wireless-type {
+      font-size: 12px;
+      color: #9fb0c8;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .wireless-text {
+      font-size: 12px;
+      color: #d7dce5;
+      line-height: 1.45;
+      white-space: normal;
+    }
+
+    .wireless-status {
+      font-size: 11px;
+      color: var(--faint);
+      line-height: 1.25;
+      margin-top: 6px;
+    }
+
+    .engine-card {
+      max-width: none;
+    }
+
+    .engine-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .engine-meta {
+      min-width: 0;
+    }
+
+    .engine-time {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f4ead1;
+      line-height: 1.2;
+    }
+
+    .engine-order {
+      font-size: 16px;
+      color: #e0e5ed;
+      line-height: 1.2;
+      margin-top: 8px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .engine-boilers {
+      font-size: 13px;
+      color: #bcc6d3;
+      line-height: 1.3;
+      margin-top: 6px;
+    }
+
+    .muted-note {
+      font-size: 11px;
+      color: var(--faint);
+      margin-top: 8px;
+      line-height: 1.3;
+    }
+
+    .map-panel {
+      flex: 1 1 auto;
+      min-height: 760px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #map {
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 760px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+    }
+
+    @media (max-width: 1400px) {
+      .map-panel,
+      #map {
+        min-height: 560px;
+      }
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .swatch {
+      display: inline-block;
+      width: 26px;
+      height: 0;
+      border-top: 3px solid;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    .footer {
+      color: var(--faint);
+      font-size: 12px;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+
+    .ship-icon,
+    .berg-icon {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .ship-icon-wrap,
+    .berg-icon-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-origin: 50% 50%;
+    }
+
+    .ship-icon-wrap {
+      width: 18px;
+      height: 18px;
+    }
+
+    .berg-icon-wrap {
+      width: 16px;
+      height: 16px;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Titanic Week 2026 Live Tracker</h1>
+  <div class="subtitle">Bridge, Marconi Room, and Engine Room board</div>
+
+  <div class="controls">
+    <button id="updateBtn">Refresh Tracker</button>
+
+    <button id="liveBtn" class="secondary active">Live</button>
+    <button id="rewindBtn" class="secondary">Rewind</button>
+    <button id="pauseBtn" class="secondary">Pause</button>
+    <button id="ffBtn" class="secondary">Fast Forward</button>
+
+    <div class="speed-wrap">
+      <span>Speed</span>
+      <input id="speedSlider" type="range" min="0" max="4" step="1" value="2" />
+      <span id="speedLabel">60×</span>
+    </div>
+
+    <div class="status-note" id="playbackStatus">Live mirror</div>
+  </div>
+
+  <div class="ops-layout">
+
+    <section class="group nav-group">
+      <h2 class="group-title">Navigation & Bridge</h2>
+      <div class="nav-grid">
+        <div class="card">
+          <div class="label">Ship Time (ATS)</div>
+          <div class="value" id="shipTime">—</div>
+        </div>
+
+        <div class="card">
+          <div class="label">2026 Time</div>
+          <div class="value" id="currentTime">—</div>
+        </div>
+
+        <div class="card">
+          <div class="label">Heading</div>
+          <div class="value" id="headingVal">—</div>
+        </div>
+
+        <div class="card">
+          <div class="label">Speed</div>
+          <div class="value" id="speedVal">—</div>
+        </div>
+
+        <div class="card">
+          <div class="label">Run From Southampton</div>
+          <div class="value" id="distanceDoneVal">—</div>
+        </div>
+
+        <div class="card">
+          <div class="label">To NYC (planned route)</div>
+          <div class="value" id="distanceToGoVal">—</div>
+        </div>
+
+        <div class="card officer-card">
+          <div class="label">Officer of the Watch</div>
+
+          <div class="officer-wrap">
+            <img
+              id="oowImg"
+              class="officer-photo"
+              src="Henry-Wilde.jpg"
+              alt="Officer portrait"
+            />
+            <div id="oowFallback" class="officer-fallback">Officer image unavailable</div>
+
+            <div class="officer-meta">
+              <div class="officer-rank" id="oowRank">Chief Officer</div>
+              <div class="officer-name" id="oowVal">Henry Wilde</div>
+              <div class="officer-stripes" id="oowStripes"></div>
+              <div class="officer-watch" id="oowWatch">2 a.m.–6 a.m. / 2 p.m.–6 p.m.</div>
+              <div class="officer-sub">Bridge watch in command</div>
+            </div>
+          </div>
+
+          <div class="watch-team">
+            <div class="watch-team-label">Also on watch</div>
+
+            <div class="watch-team-grid">
+              <div class="watch-subcard">
+                <img
+                  id="watchAImg"
+                  class="watch-subimg"
+                  src="Joseph-Boxhall.jpg"
+                  alt="Watch officer portrait"
+                />
+                <div id="watchAFallback" class="watch-subfallback">Image unavailable</div>
+
+                <div class="watch-submeta">
+                  <div class="watch-subrank" id="watchARank">Fourth Officer</div>
+                  <div class="watch-subname" id="watchAName">Joseph Boxhall</div>
+                  <div class="watch-substripes" id="watchAStripes"></div>
+                </div>
+              </div>
+
+              <div class="watch-subcard">
+                <img
+                  id="watchBImg"
+                  class="watch-subimg"
+                  src="James-Moody.jpg"
+                  alt="Watch officer portrait"
+                />
+                <div id="watchBFallback" class="watch-subfallback">Image unavailable</div>
+
+                <div class="watch-submeta">
+                  <div class="watch-subrank" id="watchBRank">Sixth Officer</div>
+                  <div class="watch-subname" id="watchBName">James Moody</div>
+                  <div class="watch-substripes" id="watchBStripes"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card weather-card">
+          <div class="label">Weather</div>
+          <div class="weather-head">
+            <div class="weather-bigicon" id="weatherBigIcon">🌤️</div>
+            <div class="weather-meta">
+              <div class="weather-short" id="weatherShort">—</div>
+              <div class="weather-detail" id="weatherDetail">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="lower-left">
+      <section class="group marconi-group">
+        <h2 class="group-title">Marconi & Wireless</h2>
+        <div class="single-grid">
+          <div class="card">
+            <div class="label">Latest Wireless Message</div>
+
+            <div class="wireless-head">
+              <div class="wireless-meta">
+                <div class="wireless-time" id="wirelessTime">—</div>
+                <div class="wireless-route" id="wirelessRoute">—</div>
+              </div>
+            </div>
+
+            <div class="wireless-type" id="wirelessType">—</div>
+            <div class="wireless-text" id="wirelessText">—</div>
+            <div class="wireless-status" id="wirelessStatus">—</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="group engine-group">
+        <h2 class="group-title">Engine Room</h2>
+        <div class="single-grid">
+          <div class="card engine-card">
+            <div class="label">Boilers & Engine Orders</div>
+
+            <div class="engine-head">
+              <div class="engine-meta">
+                <div class="engine-time" id="boilerTime">—</div>
+              </div>
+            </div>
+
+            <div class="engine-order" id="boilerOrder">—</div>
+            <div class="engine-boilers" id="boilerState">—</div>
+            <div class="muted-note">Simplified to current order and boiler state only.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <section class="group map-group">
+      <h2 class="group-title">Chart</h2>
+      <div class="map-panel">
+        <div id="map"></div>
+
+        <div class="legend">
+          <span><span class="swatch" style="border-color:#8f2a2a"></span>Southampton – Cherbourg – Cobh route</span>
+          <span><span class="swatch" style="border-color:#df4747"></span>Actual route so far</span>
+          <span><span class="swatch" style="border-color:#d1cfc7; border-top-style:dashed"></span>Indicative planned route</span>
+          <span><span class="swatch" style="border-color:#6fb6ff; opacity:.55"></span>Approximate reported ice region</span>
+        </div>
+
+        <div class="footer">
+          Grey dashed = indicative planned route. Red = reconstructed actual track. Playback controls drive a virtual ship clock; Live returns to the 2026 mirror, while Model B separates collision from foundering with a slow drift during the sinking period.
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<script>
+/* =========================
+   MASTER DATA
+========================= */
+
+const REAL_ANCHOR_UTC_MS = Date.parse('2026-04-11T14:20:00Z');
+const SHIP_ANCHOR_GMT = new Date(Date.UTC(1912, 3, 11, 14, 20, 0)); // 11 Apr 1912 14:20 GMT off Daunt Rock
+
+const EARTH_RADIUS_NM = 3440.065;
+
+/* Route constants from / aligned with Keeping Track */
+const CORNER_POS = { lat: 42.0, lon: -47.0 };
+const NANTUCKET_POINT = { lat: 40 + 35/60, lon: -(69 + 36.5/60) }; // 40°35'N, 69°36.5'W
+const AMBROSE_POINT = { lat: 40 + 28/60, lon: -(73 + 50/60) };     // 40°28'N, 73°50'W
+const NYC = { lat: 40.4500, lon: -73.8000 };
+
+/* Model B timing */
+const CORNER_ATS = new Date(Date.UTC(1912, 3, 14, 17, 50, 0)); // interpreted as ATS clock
+const CORNER_GMT = new Date(CORNER_ATS.getTime() + 178 * 60000); // 20:48 GMT on 14 Apr 1912
+
+const COLLISION_ATS = new Date(Date.UTC(1912, 3, 14, 23, 40, 0));
+const COLLISION_GMT = new Date(Date.UTC(1912, 3, 15, 2, 38, 0)); // 23:40 ATS + 2h58m
+
+const SINKING_ATS = new Date(Date.UTC(1912, 3, 15, 2, 20, 0));
+const SINKING_GMT = new Date(Date.UTC(1912, 3, 15, 5, 18, 0)); // 02:20 ATS + 2h58m
+
+/* Foundering / wreck vicinity */
+const WRECK_SITE = { lat: 41 + 43.9/60, lon: -(49 + 56.8/60) };
+
+/* Post-corner leg */
+const POST_CORNER_HEADING = 265;
+const COLLISION_SPEED_KTS = 22.3;
+const POST_CORNER_DURATION_HOURS = 5 + 50/60;
+const POST_CORNER_DISTANCE_NM = COLLISION_SPEED_KTS * POST_CORNER_DURATION_HOURS;
+
+/* =========================
+   GEO HELPERS
+========================= */
+
+function toRad(d){ return d * Math.PI / 180; }
+function toDeg(r){ return r * 180 / Math.PI; }
+
+function haversineNm(lat1, lon1, lat2, lon2){
+  const phi1 = toRad(lat1), phi2 = toRad(lat2);
+  const dphi = toRad(lat2 - lat1), dl = toRad(lon2 - lon1);
+  const a = Math.sin(dphi/2)**2 +
+            Math.cos(phi1) * Math.cos(phi2) * Math.sin(dl/2)**2;
+  return EARTH_RADIUS_NM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function sumPolylineNm(pts){
+  let total = 0;
+  for(let i=0;i<pts.length-1;i++){
+    total += haversineNm(
+      pts[i][0], pts[i][1],
+      pts[i+1][0], pts[i+1][1]
+    );
+  }
+  return total;
+}
+
+function gcInterpolate(lat1, lon1, lat2, lon2, f){
+  const phi1 = toRad(lat1), lam1 = toRad(lon1);
+  const phi2 = toRad(lat2), lam2 = toRad(lon2);
+
+  const d = 2 * Math.asin(Math.sqrt(
+    Math.sin((phi2-phi1)/2)**2 +
+    Math.cos(phi1) * Math.cos(phi2) * Math.sin((lam2-lam1)/2)**2
+  ));
+
+  if (d === 0) return { lat:lat1, lon:lon1 };
+
+  const A = Math.sin((1-f)*d) / Math.sin(d);
+  const B = Math.sin(f*d) / Math.sin(d);
+
+  const x = A*Math.cos(phi1)*Math.cos(lam1) + B*Math.cos(phi2)*Math.cos(lam2);
+  const y = A*Math.cos(phi1)*Math.sin(lam1) + B*Math.cos(phi2)*Math.sin(lam2);
+  const z = A*Math.sin(phi1) + B*Math.sin(phi2);
+
+  return {
+    lat: toDeg(Math.atan2(z, Math.sqrt(x*x+y*y))),
+    lon: toDeg(Math.atan2(y, x))
+  };
+}
+
+function bearing(lat1, lon1, lat2, lon2){
+  const phi1 = toRad(lat1), phi2 = toRad(lat2), dlam = toRad(lon2-lon1);
+  const x = Math.sin(dlam) * Math.cos(phi2);
+  const y = Math.cos(phi1)*Math.sin(phi2) - Math.sin(phi1)*Math.cos(phi2)*Math.cos(dlam);
+  return (toDeg(Math.atan2(x, y)) + 360) % 360;
+}
+
+function liveHeadingOnGc(lat1, lon1, lat2, lon2, f){
+  const here = gcInterpolate(lat1, lon1, lat2, lon2, f);
+  const ahead = gcInterpolate(lat1, lon1, lat2, lon2, Math.min(1, f + 0.01));
+  return bearing(here.lat, here.lon, ahead.lat, ahead.lon);
+}
+
+function rhumbBearing(lat1, lon1, lat2, lon2){
+  const phi1 = toRad(lat1), phi2 = toRad(lat2);
+  let dl = toRad(lon2 - lon1);
+
+  if (Math.abs(dl) > Math.PI){
+    dl = dl - Math.sign(dl) * 2 * Math.PI;
+  }
+
+  const dpsi = Math.log(
+    Math.tan(Math.PI/4 + phi2/2) / Math.tan(Math.PI/4 + phi1/2)
+  );
+
+  return (toDeg(Math.atan2(dl, dpsi)) + 360) % 360;
+}
+
+function rhumbDistanceNm(lat1, lon1, lat2, lon2){
+  const phi1 = toRad(lat1), phi2 = toRad(lat2);
+  let dl = toRad(lon2 - lon1);
+
+  if (Math.abs(dl) > Math.PI){
+    dl = dl - Math.sign(dl) * 2 * Math.PI;
+  }
+
+  const dphi = phi2 - phi1;
+  const dpsi = Math.log(
+    Math.tan(Math.PI/4 + phi2/2) / Math.tan(Math.PI/4 + phi1/2)
+  );
+  const q = Math.abs(dpsi) > 1e-12 ? dphi / dpsi : Math.cos(phi1);
+
+  return Math.sqrt(dphi*dphi + q*q*dl*dl) * EARTH_RADIUS_NM;
+}
+
+function rhumbDestination(lat1, lon1, bearingDeg, distNm){
+  const phi1 = toRad(lat1);
+  const lam1 = toRad(lon1);
+  const theta = toRad(bearingDeg);
+  const d = distNm / EARTH_RADIUS_NM;
+
+  const dPhi = d * Math.cos(theta);
+  let phi2 = phi1 + dPhi;
+
+  if (Math.abs(phi2) > Math.PI/2){
+    phi2 = Math.sign(phi2) * (Math.PI - Math.abs(phi2));
+  }
+
+  const dPsi = Math.log(
+    Math.tan(Math.PI/4 + phi2/2) / Math.tan(Math.PI/4 + phi1/2)
+  );
+  const q = Math.abs(dPsi) > 1e-12 ? dPhi / dPsi : Math.cos(phi1);
+
+  const dLam = d * Math.sin(theta) / q;
+  const lam2 = lam1 + dLam;
+
+  return {
+    lat: toDeg(phi2),
+    lon: ((toDeg(lam2) + 540) % 360) - 180
+  };
+}
+
+function rhumbInterpolate(lat1, lon1, lat2, lon2, f){
+  const totalDist = rhumbDistanceNm(lat1, lon1, lat2, lon2);
+  const brg = rhumbBearing(lat1, lon1, lat2, lon2);
+  return rhumbDestination(lat1, lon1, brg, totalDist * f);
+}
+
+function fluctuatingSpeed(base, legFrac, legIndex, amp=0.8){
+  const wiggle =
+    0.65*Math.sin((2*Math.PI*legFrac)+legIndex*0.9) +
+    0.35*Math.sin((6*Math.PI*legFrac)+legIndex*0.4);
+
+  let spd = base + amp*wiggle;
+  const lo = Math.max(0, base - 1.0);
+  const hi = base + 1.0;
+  if(spd < lo) spd = lo;
+  if(spd > hi) spd = hi;
+  return spd;
+}
+
+/* Derived collision point from Corner + post-corner leg */
+const COLLISION_POINT = rhumbDestination(
+  CORNER_POS.lat,
+  CORNER_POS.lon,
+  POST_CORNER_HEADING,
+  POST_CORNER_DISTANCE_NM
+);
+
+/* Anchors up to the Corner */
+const anchors = [
+  { gmt:'1912-04-11T14:20:00Z', lat:51.716667, lon:-8.266667, base_speed:21.0 },
+  { gmt:'1912-04-11T17:10:00Z', lat:51.383333, lon:-9.600000, base_speed:21.0 },
+  { gmt:'1912-04-12T12:00:00Z', lat:50.400000, lon:-20.766667, base_speed:20.9 },
+  { gmt:'1912-04-13T12:00:00Z', lat:47.383333, lon:-33.633333, base_speed:22.1 },
+  { gmt:'1912-04-14T12:00:00Z', lat:42.900000, lon:-44.833333, base_speed:22.3 },
+  { gmt: CORNER_GMT.toISOString(), lat: CORNER_POS.lat, lon: CORNER_POS.lon, base_speed:22.3 }
+].map(a => ({ ...a, gmtMs: Date.parse(a.gmt) }));
+
+/* Hard-coded Southampton -> Cherbourg -> Cobh / Daunt Rock departure line */
+const PRE_ROUTE_PTS = [
+  [50.89098180297684, -1.398843982696936],
+  [50.88459229011011, -1.401142207617567],
+  [50.87873016721548, -1.391469363875056],
+  [50.85443595065755, -1.340570864378854],
+  [50.84564247194122, -1.326600728377496],
+  [50.8207329402995, -1.293188984062097],
+  [50.79377227929528, -1.26018673121726],
+  [50.76710877051379, -1.20065202358738],
+  [50.75416748460301, -1.133605677026761],
+  [50.73406151632889, -1.040844524229367],
+  [50.67370046892968, -0.9595891172121107],
+  [50.59550194514181, -0.8901092338759498],
+  [50.49386796667895, -0.8658718200582671],
+  [50.29557404581949, -1.036319103616563],
+  [50.12678885263864, -1.214078644157486],
+  [49.95701673683959, -1.405065663122651],
+  [49.80343650473395, -1.547873959097514],
+  [49.72062554115331, -1.597800824724624],
+  [49.67806765444105, -1.61332689516855],
+  [49.8190510158479, -1.946051814459252],
+  [49.8503937831893, -2.331415664363362],
+  [49.78660856425413, -2.913688351801558],
+  [49.57614627957076, -4.304897377161099],
+  [49.43196547741839, -6.045747840676769],
+  [49.52842953879532, -6.733605063480273],
+  [49.81049506136718, -7.137593445975904],
+  [50.28056956577378, -7.422517869974145],
+  [50.69903487967672, -7.623886179531186],
+  [51.08987835222771, -7.820936406586103],
+  [51.36893884346983, -7.970947007514392],
+  [51.55317034199341, -8.075560623503684],
+  [51.78535036157697, -8.251304701563049]
+];
+
+/* Softer, less square approximation of reported ice region */
+const ICE_ZONE = [
+  [42.30, -50.95],
+  [42.25, -50.70],
+  [42.20, -50.38],
+  [42.16, -50.08],
+  [42.09, -49.76],
+  [42.00, -49.42],
+  [41.88, -49.10],
+  [41.72, -48.96],
+  [41.54, -49.06],
+  [41.38, -49.28],
+  [41.26, -49.60],
+  [41.24, -49.96],
+  [41.30, -50.28],
+  [41.44, -50.56],
+  [41.64, -50.82],
+  [41.92, -50.98]
+];
+
+/* =========================
+   PLAYBACK CONTROL
+========================= */
+
+const SPEED_STEPS = [1, 10, 60, 240, 720];
+
+let playbackMode = 'live';     // 'live' | 'manual'
+let playbackRate = 60;
+let playbackDirection = 1;     // 1 forward, -1 backward
+let playbackPaused = false;
+
+let simShipMs = null;
+let lastRealTickMs = null;
+
+function setActiveControl(btnId){
+  ['liveBtn','rewindBtn','pauseBtn','ffBtn'].forEach(id => {
+    document.getElementById(id).classList.remove('active');
+  });
+  document.getElementById(btnId).classList.add('active');
+}
+
+function getLiveShipGmtNow(){
+  const voyageElapsedMs = Date.now() - REAL_ANCHOR_UTC_MS;
+  return new Date(SHIP_ANCHOR_GMT.getTime() + voyageElapsedMs);
+}
+
+function enterManualMode(startMs){
+  playbackMode = 'manual';
+  simShipMs = startMs;
+  lastRealTickMs = Date.now();
+}
+
+function updatePlaybackStatus(){
+  const el = document.getElementById('playbackStatus');
+  if(playbackMode === 'live'){
+    el.textContent = 'Live mirror';
+    return;
+  }
+
+  if(playbackPaused){
+    el.textContent = 'Paused';
+    return;
+  }
+
+  el.textContent = playbackDirection === 1
+    ? `Fast forward at ${playbackRate}×`
+    : `Rewind at ${playbackRate}×`;
+}
+
+function setPlaybackLive(){
+  playbackMode = 'live';
+  playbackPaused = false;
+  playbackDirection = 1;
+  simShipMs = null;
+  lastRealTickMs = null;
+  setActiveControl('liveBtn');
+  updatePlaybackStatus();
+}
+
+function setPlaybackForward(){
+  const current = getControlledShipGmtNow().getTime();
+  enterManualMode(current);
+  playbackPaused = false;
+  playbackDirection = 1;
+  setActiveControl('ffBtn');
+  updatePlaybackStatus();
+}
+
+function setPlaybackRewind(){
+  const current = getControlledShipGmtNow().getTime();
+  enterManualMode(current);
+  playbackPaused = false;
+  playbackDirection = -1;
+  setActiveControl('rewindBtn');
+  updatePlaybackStatus();
+}
+
+function setPlaybackPause(){
+  const current = getControlledShipGmtNow().getTime();
+  enterManualMode(current);
+  playbackPaused = true;
+  simShipMs = current;
+  setActiveControl('pauseBtn');
+  updatePlaybackStatus();
+}
+
+function getControlledShipGmtNow(){
+  if(playbackMode === 'live'){
+    return getLiveShipGmtNow();
+  }
+
+  if(simShipMs === null){
+    simShipMs = SHIP_ANCHOR_GMT.getTime();
+  }
+
+  const now = Date.now();
+  if(lastRealTickMs === null){
+    lastRealTickMs = now;
+  }
+
+  if(!playbackPaused){
+    const elapsedRealMs = now - lastRealTickMs;
+    simShipMs += elapsedRealMs * playbackRate * playbackDirection;
+  }
+
+  lastRealTickMs = now;
+
+  const minMs = SHIP_ANCHOR_GMT.getTime();
+  const maxMs = SINKING_GMT.getTime();
+
+  if(simShipMs < minMs){
+    simShipMs = minMs;
+    playbackPaused = true;
+    setActiveControl('pauseBtn');
+  }
+
+  if(simShipMs > maxMs){
+    simShipMs = maxMs;
+    playbackPaused = true;
+    setActiveControl('pauseBtn');
+  }
+
+  updatePlaybackStatus();
+  return new Date(simShipMs);
+}
+
+/* =========================
+   ATS DISPLAY CLOCK
+========================= */
+
+function getAtsOffsetMinutes(gmtDt){
+  const t = gmtDt.getTime();
+
+  const d12 = Date.UTC(1912, 3, 12, 0, 0, 0);
+  const d13 = Date.UTC(1912, 3, 13, 0, 0, 0);
+  const d14 = Date.UTC(1912, 3, 14, 0, 0, 0);
+
+  if (t < d12) return 0;
+  if (t < d13) return 84;   // 1h24m
+  if (t < d14) return 133;  // 2h13m
+  return 178;               // 2h58m
+}
+
+function getDisplayedShipClock(gmtShipNow){
+  const mins = getAtsOffsetMinutes(gmtShipNow);
+  return new Date(gmtShipNow.getTime() - mins * 60000);
+}
+
+function friendlyClock(dt, timeZone, suffix){
+  const base = dt.toLocaleString('en-GB', {
+    weekday:'short',
+    day:'2-digit',
+    month:'short',
+    year:'numeric',
+    hour:'2-digit',
+    minute:'2-digit',
+    second:'2-digit',
+    hour12:false,
+    timeZone
+  });
+  return `${base} ${suffix}`;
+}
+
+function formatAtsMoment(dt){
+  return dt.toLocaleString('en-GB', {
+    weekday:'short',
+    day:'2-digit',
+    month:'short',
+    year:'numeric',
+    hour:'2-digit',
+    minute:'2-digit',
+    hour12:false,
+    timeZone:'UTC'
+  }) + ' ATS';
+}
+
+/* =========================
+   OFFICER HELPERS
+========================= */
+
+function getOfficerInfo(displayedShipClock){
+  const h = displayedShipClock.getUTCHours() + displayedShipClock.getUTCMinutes()/60;
+
+  if(h >= 2 && h < 6){
+    return {
+      rank: 'Chief Officer',
+      name: 'Henry Wilde',
+      watch: '2 a.m.–6 a.m. / 2 p.m.–6 p.m.',
+      image: 'Henry-Wilde.jpg',
+      stripes: 'chief'
+    };
+  }
+
+  if(h >= 6 && h < 10){
+    return {
+      rank: 'Second Officer',
+      name: 'Charles Lightoller',
+      watch: '6 a.m.–10 a.m. / 6 p.m.–10 p.m.',
+      image: 'Charles-Lightoller.jpg',
+      stripes: 'junior'
+    };
+  }
+
+  if(h >= 10 && h < 14){
+    return {
+      rank: 'First Officer',
+      name: 'William Murdoch',
+      watch: '10 a.m.–2 p.m. / 10 p.m.–2 a.m.',
+      image: 'William-Murdoch.jpg',
+      stripes: 'first'
+    };
+  }
+
+  if(h >= 14 && h < 18){
+    return {
+      rank: 'Chief Officer',
+      name: 'Henry Wilde',
+      watch: '2 a.m.–6 a.m. / 2 p.m.–6 p.m.',
+      image: 'Henry-Wilde.jpg',
+      stripes: 'chief'
+    };
+  }
+
+  if(h >= 18 && h < 22){
+    return {
+      rank: 'Second Officer',
+      name: 'Charles Lightoller',
+      watch: '6 a.m.–10 a.m. / 6 p.m.–10 p.m.',
+      image: 'Charles-Lightoller.jpg',
+      stripes: 'junior'
+    };
+  }
+
+  return {
+    rank: 'First Officer',
+    name: 'William Murdoch',
+    watch: '10 a.m.–2 p.m. / 10 p.m.–2 a.m.',
+    image: 'William-Murdoch.jpg',
+    stripes: 'first'
+  };
+}
+
+function buildRankSvg(type, variant = 'main'){
+  const gold = '#d8b35a';
+  const stroke = '#b8933c';
+  const svgClass = variant === 'small' ? 'rank-svg-small' : 'rank-svg';
+
+  if(type === 'chief'){
+    return `
+      <svg class="${svgClass}" viewBox="0 0 150 40" aria-hidden="true">
+        <rect x="0" y="0" width="150" height="40" rx="6" fill="#0f141b"></rect>
+        <rect x="16" y="28" width="90" height="4.5" rx="2" fill="${gold}" stroke="${stroke}" stroke-width="0.6"></rect>
+        <rect x="16" y="20" width="90" height="4.5" rx="2" fill="${gold}" stroke="${stroke}" stroke-width="0.6"></rect>
+        <rect x="16" y="12" width="70" height="4.5" rx="2" fill="${gold}" stroke="${stroke}" stroke-width="0.6"></rect>
+        <circle cx="98" cy="14.25" r="8.2" fill="none" stroke="${gold}" stroke-width="4.5"></circle>
+      </svg>
+    `;
+  }
+
+  if(type === 'first'){
+    return `
+      <svg class="${svgClass}" viewBox="0 0 150 40" aria-hidden="true">
+        <rect x="0" y="0" width="150" height="40" rx="6" fill="#0f141b"></rect>
+        <rect x="16" y="24" width="90" height="4.5" rx="2" fill="${gold}" stroke="${stroke}" stroke-width="0.6"></rect>
+        <rect x="16" y="14" width="70" height="4.5" rx="2" fill="${gold}" stroke="${stroke}" stroke-width="0.6"></rect>
+        <circle cx="98" cy="16.25" r="8.2" fill="none" stroke="${gold}" stroke-width="4.5"></circle>
+      </svg>
+    `;
+  }
+
+  return `
+    <svg class="${svgClass}" viewBox="0 0 150 40" aria-hidden="true">
+      <rect x="0" y="0" width="150" height="40" rx="6" fill="#0f141b"></rect>
+      <rect x="16" y="18" width="70" height="4.5" rx="2" fill="${gold}" stroke="${stroke}" stroke-width="0.6"></rect>
+      <circle cx="98" cy="20.25" r="8.2" fill="none" stroke="${gold}" stroke-width="4.5"></circle>
+    </svg>
+  `;
+}
+
+function setOfficerImage(src, fallbackText){
+  const img = document.getElementById('oowImg');
+  const fallback = document.getElementById('oowFallback');
+
+  img.onerror = function(){
+    img.style.display = 'none';
+    fallback.style.display = 'flex';
+    fallback.textContent = fallbackText;
+  };
+
+  img.onload = function(){
+    img.style.display = 'block';
+    fallback.style.display = 'none';
+  };
+
+  if(img.getAttribute('src') !== src){
+    img.setAttribute('src', src);
+  }
+}
+
+const PORT_WATCH_TEAM = [
+  {
+    rank: 'Third Officer',
+    name: 'Herbert Pitman',
+    image: 'Herbert-Pitman.jpg',
+    stripes: 'junior'
+  },
+  {
+    rank: 'Fifth Officer',
+    name: 'Harold Lowe',
+    image: 'Harold-Lowe.jpg',
+    stripes: 'junior'
+  }
+];
+
+const STARBOARD_WATCH_TEAM = [
+  {
+    rank: 'Fourth Officer',
+    name: 'Joseph Boxhall',
+    image: 'Joseph-Boxhall.jpg',
+    stripes: 'junior'
+  },
+  {
+    rank: 'Sixth Officer',
+    name: 'James Moody',
+    image: 'James-Moody.jpg',
+    stripes: 'junior'
+  }
+];
+
+function getDayStartUtc(dt){
+  return Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate());
+}
+
+function dogWatchStartsWithStarboard(displayedShipClock){
+  const anchor = Date.UTC(1912, 3, 14); // 14 Apr 1912
+  const diffDays = Math.round((getDayStartUtc(displayedShipClock) - anchor) / 86400000);
+  return Math.abs(diffDays) % 2 === 0;
+}
+
+function getJuniorWatchTeam(displayedShipClock){
+  const h = displayedShipClock.getUTCHours() + displayedShipClock.getUTCMinutes() / 60;
+  const starboardDogFirst = dogWatchStartsWithStarboard(displayedShipClock);
+
+  if(h >= 0 && h < 4)   return STARBOARD_WATCH_TEAM;
+  if(h >= 4 && h < 8)   return PORT_WATCH_TEAM;
+  if(h >= 8 && h < 12)  return STARBOARD_WATCH_TEAM;
+  if(h >= 12 && h < 16) return PORT_WATCH_TEAM;
+
+  if(h >= 16 && h < 18){
+    return starboardDogFirst ? STARBOARD_WATCH_TEAM : PORT_WATCH_TEAM;
+  }
+
+  if(h >= 18 && h < 20){
+    return starboardDogFirst ? PORT_WATCH_TEAM : STARBOARD_WATCH_TEAM;
+  }
+
+  return starboardDogFirst ? STARBOARD_WATCH_TEAM : PORT_WATCH_TEAM;
+}
+
+function setWatchOfficerImage(imgId, fallbackId, src, fallbackText){
+  const img = document.getElementById(imgId);
+  const fallback = document.getElementById(fallbackId);
+
+  img.onerror = function(){
+    img.style.display = 'none';
+    fallback.style.display = 'flex';
+    fallback.textContent = fallbackText;
+  };
+
+  img.onload = function(){
+    img.style.display = 'block';
+    fallback.style.display = 'none';
+  };
+
+  if(img.getAttribute('src') !== src){
+    img.setAttribute('src', src);
+  }
+}
+
+function updateJuniorWatchWidget(displayedShipClock){
+  const team = getJuniorWatchTeam(displayedShipClock);
+  const a = team[0];
+  const b = team[1];
+
+  document.getElementById('watchARank').textContent = a.rank;
+  document.getElementById('watchAName').textContent = a.name;
+  document.getElementById('watchAStripes').innerHTML = buildRankSvg(a.stripes, 'small');
+  setWatchOfficerImage('watchAImg', 'watchAFallback', a.image, `${a.rank}\n${a.name}`);
+
+  document.getElementById('watchBRank').textContent = b.rank;
+  document.getElementById('watchBName').textContent = b.name;
+  document.getElementById('watchBStripes').innerHTML = buildRankSvg(b.stripes, 'small');
+  setWatchOfficerImage('watchBImg', 'watchBFallback', b.image, `${b.rank}\n${b.name}`);
+}
+
+/* =========================
+   WEATHER DATA + HELPERS
+========================= */
+
+const WEATHER_PERIODS = {
+  "1912-04-10": {
+    day: {
+      icon: "🌤️",
+      short: "Dry, bright departure weather",
+      detail: "Dry with sunny spells and some fair-weather cloud; cool north-westerly breeze."
+    },
+    night: {
+      icon: "🌙",
+      short: "Clear and cool",
+      detail: "Generally dry and clear after departure; no major weather disruption evidenced."
+    }
+  },
+
+  "1912-04-11": {
+    day: {
+      icon: "🌤️",
+      short: "Clear and fine",
+      detail: "Fine conditions after Queenstown departure; visibility good and sea calm."
+    },
+    night: {
+      icon: "✨",
+      short: "Bright starlight, calm sea",
+      detail: "Clear night with bright starlight; calm Atlantic surface."
+    }
+  },
+
+  "1912-04-12": {
+    day: {
+      icon: "☀️",
+      short: "Fine weather, calm water",
+      detail: "Fine weather confirmed in contemporary wireless traffic; sea remained calm."
+    },
+    night: {
+      icon: "✨",
+      short: "Clear and settled",
+      detail: "Bright, clear night with calm sea and no significant weather deterioration."
+    }
+  },
+
+  "1912-04-13": {
+    day: {
+      icon: "🌤️",
+      short: "Clear and settled",
+      detail: "Clear, settled Atlantic weather; calm sea and no meaningful change evidenced."
+    },
+    night: {
+      icon: "✨",
+      short: "Clear, calm night",
+      detail: "Fine and stable overnight conditions; sea remained calm."
+    }
+  },
+
+  "1912-04-14": {
+    day: {
+      icon: "🌤️",
+      short: "Clear, fine, calm",
+      detail: "Clear fine weather with moderate variable winds earlier in the day; sea calm."
+    },
+    night: {
+      icon: "❄️",
+      short: "Cloudless, moonless, flat calm",
+      detail: "No moon, no cloud, stars out, rapid temperature fall, and a flat calm sea."
+    }
+  },
+
+  "1912-04-15": {
+    day: {
+      icon: "🧊",
+      short: "Bitterly cold rescue morning",
+      detail: "Clear, calm, icy rescue conditions in first light among lifeboats and scattered ice."
+    },
+    night: {
+      icon: "❄️",
+      short: "Very cold and calm",
+      detail: "Through the sinking hours the weather remained clear, calm, and bitterly cold."
+    }
+  }
+};
+
+function getWeatherForDisplayedShipClock(displayedShipClock){
+  const y = displayedShipClock.getUTCFullYear();
+  const m = String(displayedShipClock.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(displayedShipClock.getUTCDate()).padStart(2, '0');
+  const key = `${y}-${m}-${d}`;
+
+  const hour = displayedShipClock.getUTCHours() + displayedShipClock.getUTCMinutes() / 60;
+  const period = (hour >= 6 && hour < 18) ? 'day' : 'night';
+
+  const row = WEATHER_PERIODS[key] || WEATHER_PERIODS["1912-04-14"];
+  return row[period];
+}
+
+function updateWeatherWidget(displayedShipClock){
+  const w = getWeatherForDisplayedShipClock(displayedShipClock);
+  document.getElementById('weatherBigIcon').textContent = w.icon;
+  document.getElementById('weatherShort').textContent = w.short;
+  document.getElementById('weatherDetail').textContent = w.detail;
+}
+
+/* ============================================
+   WIRELESS MESSAGE TIMELINE (ATS-DRIVEN)
+============================================ */
+
+const WIRELESS_MESSAGES = [
+  {
+    ats: "1912-04-12T17:46:00Z",
+    type: "Ice warning",
+    from: "La Touraine",
+    to: "Titanic",
+    delivered: "Wireless contact acknowledged; no clear bridge action recorded",
+    text: "My position 7 p.m. GMT lat 49.28, long 26.28 W. Dense fog since this night. Crossed thick ice-field lat 44.58, long 50.40. Paris saw another ice-field and two icebergs lat 45.20, long 50.09. Paris saw a derelict lat 40.56, long 68.38. Please give me your position. Best regards and bon voyage."
+  },
+
+  {
+    ats: "1912-04-14T09:12:00Z",
+    type: "Ice warning",
+    from: "Caronia",
+    to: "Titanic",
+    delivered: "Received by Captain Smith / acknowledged",
+    text: "Westbound steamers report bergs, growlers and field ice in 42° N. from 49° to 51° W. Compliments."
+  },
+
+  {
+    ats: "1912-04-14T11:47:00Z",
+    type: "Relayed ice warning",
+    from: "Noordam (via Caronia)",
+    to: "Titanic",
+    delivered: "Relayed warning",
+    text: "Congratulations on new command. Had moderate westerly winds, fair weather, no fog. Much ice reported in lat. 42° 24' to 42° 45' and long. 49° 50' to 50° 20'. Compliments."
+  },
+
+  {
+    ats: "1912-04-14T13:49:00Z",
+    type: "Relay message",
+    from: "Amerika",
+    to: "Titanic (for re-transmission)",
+    delivered: "Handled in wireless traffic / relay via Titanic",
+    text: "Amerika passed two large icebergs at 41.27 N., 50.8 W."
+  },
+
+  {
+    ats: "1912-04-14T13:54:00Z",
+    type: "Ice warning",
+    from: "Baltic",
+    to: "Titanic",
+    delivered: "Received by Captain Smith / passed to bridge / later circulated on board",
+    text: "Have had moderate, variable winds and clear, fine weather since leaving. Greek steamer Athinai reports passing icebergs and large quantities of field ice to-day in lat. 41.51 N., long. 49.52 W. Last night we spoke German oil tank steamer Deutschland, Stettin to Philadelphia, not under control, short of coal, lat. 40.42 N., long. 55.11 W. Wishes to be reported to New York and other steamers. Wish you and Titanic all success."
+  },
+
+  {
+    ats: "1912-04-14T19:37:00Z",
+    type: "Intercepted / delivered warning",
+    from: "Californian",
+    to: "Antillian (intercepted by Titanic)",
+    delivered: "Jotted by Bride and taken to the bridge within minutes",
+    text: "Latitude 42.3 north, longitude 49.9 west. Three large bergs 5 miles to southward of us. Regards. Lord."
+  },
+
+  {
+    ats: "1912-04-14T21:52:00Z",
+    type: "Major ice warning",
+    from: "Mesaba",
+    to: "Titanic",
+    delivered: "Received by wireless room; apparently not taken to bridge",
+    text: "In latitude 42 N. to 41.25, longitude 49 W. to longitude 50.30 W., saw much heavy pack ice and great number large icebergs, also field ice, weather good, clear."
+  },
+
+  {
+    ats: "1912-04-14T23:07:00Z",
+    type: "Immediate ice proximity message",
+    from: "Californian",
+    to: "Titanic",
+    delivered: "Operator only",
+    text: "We are stopped and surrounded by ice."
+  },
+
+  {
+    ats: "1912-04-14T23:40:00Z",
+    type: "Collision event",
+    from: "—",
+    to: "—",
+    delivered: "Iceberg impact",
+    text: "Titanic collides with the iceberg."
+  },
+
+  {
+    ats: "1912-04-15T00:15:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Received by multiple ships and shore stations",
+    text: "CQD CQD CQD. Require immediate assistance."
+  },
+
+  {
+    ats: "1912-04-15T00:25:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "Carpathia",
+    delivered: "Received by Carpathia; Carpathia turns and responds",
+    text: "Come at once. We have struck a berg. It's a C.Q.D. O.M. Position 41.46 N. 50.14 W."
+  },
+
+  {
+    ats: "1912-04-15T00:26:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Broadcast / heard by multiple stations",
+    text: "C.Q.D. Here corrected position 41.46 N. 50.14 W. Require immediate assistance. We have collision with iceberg. Sinking. Can nothing hear for noise of steam."
+  },
+
+  {
+    ats: "1912-04-15T00:36:00Z",
+    type: "Distress exchange",
+    from: "Titanic / Frankfurt",
+    to: "Frankfurt / Titanic",
+    delivered: "Exchange received",
+    text: "Frankfurt: 'What is the matter with u?' Titanic: 'We have collision with iceberg. Sinking. Please tell Captain to come.'"
+  },
+
+  {
+    ats: "1912-04-15T01:25:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Heard in ongoing wireless traffic",
+    text: "We are getting the women off in small boats."
+  },
+
+  {
+    ats: "1912-04-15T01:35:00Z",
+    type: "Critical distress update",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Heard in ongoing wireless traffic",
+    text: "Engine room getting flooded."
+  },
+
+  {
+    ats: "1912-04-15T02:20:00Z",
+    type: "End of voyage",
+    from: "—",
+    to: "—",
+    delivered: "Ship lost",
+    text: "Titanic sinks."
+  }
+];
+
+const WIRELESS_MESSAGES_PARSED = WIRELESS_MESSAGES
+  .map(m => ({ ...m, atsMs: Date.parse(m.ats) }))
+  .sort((a, b) => a.atsMs - b.atsMs);
+
+function getLatestWirelessMessage(displayedShipClock){
+  const nowMs = displayedShipClock.getTime();
+  let latest = null;
+
+  for(const msg of WIRELESS_MESSAGES_PARSED){
+    if(msg.atsMs <= nowMs){
+      latest = msg;
+    } else {
+      break;
+    }
+  }
+
+  return latest;
+}
+
+function updateWirelessWidget(displayedShipClock){
+  const msg = getLatestWirelessMessage(displayedShipClock);
+
+  if(!msg){
+    document.getElementById('wirelessTime').textContent = formatAtsMoment(displayedShipClock);
+    document.getElementById('wirelessRoute').textContent = "—";
+    document.getElementById('wirelessType').textContent = "Wireless traffic";
+    document.getElementById('wirelessText').textContent = "no relevant wireless warnings yet";
+    document.getElementById('wirelessStatus').textContent = "Status: Awaiting first timed warning";
+    return;
+  }
+
+  document.getElementById('wirelessTime').textContent = formatAtsMoment(new Date(msg.atsMs));
+  document.getElementById('wirelessRoute').textContent = `${msg.from} → ${msg.to}`;
+  document.getElementById('wirelessType').textContent = msg.type;
+  document.getElementById('wirelessText').textContent = msg.text;
+  document.getElementById('wirelessStatus').textContent = `Status: ${msg.delivered}`;
+}
+
+/* ============================================
+   ENGINE / BOILER TIMELINE (ATS-DRIVEN)
+   Simplified display only
+============================================ */
+
+const ENGINE_EVENTS = [
+  {
+    ats: "1912-04-10T12:00:00Z",
+    order: "Slow Ahead",
+    boilers: "Boilers in use: partial plant (exact count uncertain)"
+  },
+  {
+    ats: "1912-04-10T15:05:00Z",
+    order: "Ahead at sea speed",
+    boilers: "Boilers in use: increasing, exact count uncertain"
+  },
+  {
+    ats: "1912-04-11T13:55:00Z",
+    order: "Full Ahead",
+    boilers: "Boilers in use: transatlantic service condition building"
+  },
+  {
+    ats: "1912-04-12T12:00:00Z",
+    order: "Full Ahead",
+    boilers: "Boilers in use: additional boilers being brought online"
+  },
+  {
+    ats: "1912-04-14T05:00:00Z",
+    order: "Full Ahead",
+    boilers: "Boilers lit: 24 | Unlit: 5"
+  },
+  {
+    ats: "1912-04-14T19:00:00Z",
+    order: "Full Ahead",
+    boilers: "Boilers lit: 24 | Boiler Room No. 2 final boilers treated as connected"
+  },
+  {
+    ats: "1912-04-14T23:39:00Z",
+    order: "Stop / Full Speed Astern",
+    boilers: "Boilers lit: 24 | Unlit: 5"
+  },
+  {
+    ats: "1912-04-14T23:45:00Z",
+    order: "Stop / Draw Fires",
+    boilers: "Boilers: fires being drawn in threatened rooms"
+  },
+  {
+    ats: "1912-04-15T02:20:00Z",
+    order: "No Propulsion",
+    boilers: "Boilers: plant lost with the ship"
+  }
+];
+
+const ENGINE_EVENTS_PARSED = ENGINE_EVENTS
+  .map(e => ({ ...e, atsMs: Date.parse(e.ats) }))
+  .sort((a, b) => a.atsMs - b.atsMs);
+
+function getLatestEngineEvent(displayedShipClock){
+  const nowMs = displayedShipClock.getTime();
+  let latest = ENGINE_EVENTS_PARSED[0];
+
+  for(const evt of ENGINE_EVENTS_PARSED){
+    if(evt.atsMs <= nowMs){
+      latest = evt;
+    } else {
+      break;
+    }
+  }
+
+  return latest;
+}
+
+function updateEngineWidget(displayedShipClock){
+  const evt = getLatestEngineEvent(displayedShipClock);
+
+  document.getElementById('boilerTime').textContent = formatAtsMoment(new Date(evt.atsMs));
+  document.getElementById('boilerOrder').textContent = evt.order;
+  document.getElementById('boilerState').textContent = evt.boilers;
+}
+
+/* =========================
+   MAP SETUP
+========================= */
+
+const map = L.map('map', { zoomControl:true, preferCanvas:true });
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; OpenStreetMap &copy; CARTO',
+  subdomains:'abcd',
+  maxZoom:18
+}).addTo(map);
+
+L.polyline(PRE_ROUTE_PTS, { color:'#8f2a2a', weight:2, opacity:0.85 }).addTo(map);
+
+L.polygon(ICE_ZONE, {
+  color: '#6fb6ff',
+  weight: 1,
+  opacity: 0.22,
+  fillColor: '#6fb6ff',
+  fillOpacity: 0.12
+}).bindTooltip('Approximate reported ice region', {sticky:true}).addTo(map);
+
+let actualLine  = L.polyline([], { color:'#df4747', weight:2, opacity:0.95 }).addTo(map);
+let plannedLine = L.polyline([], { color:'#d1cfc7', weight:2, opacity:0.62, dashArray:'8 8' }).addTo(map);
+
+let shipMarker = null;
+let bergMarker = null;
+
+[
+  {lat:50.890804633773, lon:-1.398470322519, label:'Southampton'},
+  {lat:49.664447185968, lon:-1.613681184586, label:'Cherbourg'},
+  {lat:51.846911968484, lon:-8.285999388316, label:'Cobh'},
+  {lat:51.716667,       lon:-8.266667,       label:'Daunt Rock'}
+].forEach(function(s){
+  L.circleMarker([s.lat,s.lon], {
+    radius:3,
+    color:'#d9d4c8',
+    weight:1,
+    fillColor:'#d9d4c8',
+    fillOpacity:0.9
+  }).bindTooltip(s.label, {direction:'top', opacity:0.85}).addTo(map);
+});
+
+function shipDivIcon(heading){
+  const html = `
+    <div class="ship-icon-wrap" style="transform: rotate(${heading}deg);">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <polygon points="12,2 22,22 12,18 2,22" fill="#df4747"></polygon>
+      </svg>
+    </div>`;
+  return L.divIcon({
+    className:'ship-icon',
+    html:html,
+    iconSize:[18,18],
+    iconAnchor:[9,9]
+  });
+}
+
+function bergDivIcon(){
+  const html = `
+    <div class="berg-icon-wrap">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path d="M3 19 L8 10 L11 13 L14 6 L21 19 Z" fill="#bfe3ff" stroke="#e6f5ff" stroke-width="1.2"></path>
+      </svg>
+    </div>`;
+  return L.divIcon({
+    className:'berg-icon',
+    html:html,
+    iconSize:[16,16],
+    iconAnchor:[8,8]
+  });
+}
+
+map.fitBounds([
+  [40.0, -73.8],
+  [52.5, -1.0]
+], { padding:[18,18] });
+
+setTimeout(() => {
+  map.invalidateSize();
+}, 150);
+
+window.addEventListener('resize', () => {
+  map.invalidateSize();
+});
+
+/* =========================
+   ROUTE HELPERS
+========================= */
+
+function densifyGcPath(waypoints, stepsPerLeg=24){
+  const pts = [];
+  if(!waypoints.length) return pts;
+  pts.push([waypoints[0].lat, waypoints[0].lon]);
+  for(let i=0;i<waypoints.length-1;i++){
+    const p0 = waypoints[i], p1 = waypoints[i+1];
+    for(let s=1;s<=stepsPerLeg;s++){
+      const pp = gcInterpolate(p0.lat, p0.lon, p1.lat, p1.lon, s/stepsPerLeg);
+      pts.push([pp.lat, pp.lon]);
+    }
+  }
+  return pts;
+}
+
+function densifyRhumbPath(waypoints, stepsPerLeg=24){
+  const pts = [];
+  if(!waypoints.length) return pts;
+  pts.push([waypoints[0].lat, waypoints[0].lon]);
+  for(let i=0;i<waypoints.length-1;i++){
+    const p0 = waypoints[i], p1 = waypoints[i+1];
+    for(let s=1;s<=stepsPerLeg;s++){
+      const pp = rhumbInterpolate(p0.lat, p0.lon, p1.lat, p1.lon, s/stepsPerLeg);
+      pts.push([pp.lat, pp.lon]);
+    }
+  }
+  return pts;
+}
+
+function buildPlannedRouteAhead(pos, gmtShipNow){
+  if(gmtShipNow.getTime() >= COLLISION_GMT.getTime()){
+    return [];
+  }
+
+  if(gmtShipNow.getTime() < CORNER_GMT.getTime()){
+    const gcPart = densifyGcPath([
+      {lat:pos.lat, lon:pos.lon},
+      {lat:CORNER_POS.lat, lon:CORNER_POS.lon}
+    ], 28);
+
+    const rhumbPart = densifyRhumbPath([
+      {lat:CORNER_POS.lat, lon:CORNER_POS.lon},
+      {lat:NANTUCKET_POINT.lat, lon:NANTUCKET_POINT.lon},
+      {lat:AMBROSE_POINT.lat, lon:AMBROSE_POINT.lon}
+    ], 28);
+
+    return gcPart.concat(rhumbPart);
+  }
+
+  const rhumbPart = densifyRhumbPath([
+    {lat:pos.lat, lon:pos.lon},
+    {lat:NANTUCKET_POINT.lat, lon:NANTUCKET_POINT.lon},
+    {lat:AMBROSE_POINT.lat, lon:AMBROSE_POINT.lon}
+  ], 28);
+
+  return rhumbPart;
+}
+
+/* =========================
+   ICEBERG TRACK
+========================= */
+
+const BERG_START_GMT = new Date(Date.UTC(1912, 3, 11, 14, 20, 0));
+const BERG_START_POS = { lat: 42.55, lon: -49.20 };
+const BERG_DRIFT_BEARING = 196;
+const BERG_DRIFT_SPEED_KN = 1.3;
+
+function destinationPointNm(lat, lon, bearingDeg, distNm){
+  const br = toRad(bearingDeg);
+  const angDist = distNm / EARTH_RADIUS_NM;
+  const phi1 = toRad(lat);
+  const lam1 = toRad(lon);
+
+  const sinPhi2 = Math.sin(phi1)*Math.cos(angDist) + Math.cos(phi1)*Math.sin(angDist)*Math.cos(br);
+  const phi2 = Math.asin(sinPhi2);
+
+  const y = Math.sin(br)*Math.sin(angDist)*Math.cos(phi1);
+  const x = Math.cos(angDist) - Math.sin(phi1)*Math.sin(phi2);
+  const lam2 = lam1 + Math.atan2(y, x);
+
+  return { lat: toDeg(phi2), lon: ((toDeg(lam2)+540)%360)-180 };
+}
+
+function getBergPosition(gmtShipNow){
+  const t = gmtShipNow.getTime();
+  const t0 = BERG_START_GMT.getTime();
+  const tc = COLLISION_GMT.getTime();
+
+  if(t <= tc){
+    const f = Math.max(0, Math.min(1, (t - t0) / (tc - t0)));
+    return gcInterpolate(BERG_START_POS.lat, BERG_START_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, f);
+  }
+
+  const hoursAfter = (t - tc) / 3600000;
+  return destinationPointNm(COLLISION_POINT.lat, COLLISION_POINT.lon, BERG_DRIFT_BEARING, BERG_DRIFT_SPEED_KN * hoursAfter);
+}
+
+/* =========================
+   SAMPLE / UPDATE
+========================= */
+
+function samplePortal(){
+  const now = new Date();
+  const gmtShipNow = getControlledShipGmtNow();
+  const displayedShipClock = getDisplayedShipClock(gmtShipNow);
+
+  let pos, head, speedDisplay;
+  let wake = [];
+
+  /* Phase 1: up to the Corner */
+  if(gmtShipNow.getTime() <= CORNER_GMT.getTime()){
+    let idx = anchors.findIndex(a => a.gmtMs > gmtShipNow.getTime()) - 1;
+    if(idx < 0) idx = 0;
+    if(idx > anchors.length - 2) idx = anchors.length - 2;
+
+    const a0 = anchors[idx];
+    const a1 = anchors[idx+1];
+    const f  = Math.max(0, Math.min(1, (gmtShipNow.getTime() - a0.gmtMs) / (a1.gmtMs - a0.gmtMs)));
+
+    pos = gcInterpolate(a0.lat, a0.lon, a1.lat, a1.lon, f);
+    head = liveHeadingOnGc(a0.lat, a0.lon, a1.lat, a1.lon, f);
+    speedDisplay = fluctuatingSpeed(a0.base_speed, f, idx).toFixed(1) + ' kn';
+
+    for(let i=0;i<idx;i++){
+      const p0 = anchors[i], p1 = anchors[i+1];
+      for(let s=0;s<20;s++){
+        const pp = gcInterpolate(p0.lat, p0.lon, p1.lat, p1.lon, s/20);
+        wake.push([pp.lat, pp.lon]);
+      }
+    }
+
+    for(let s=0;s<Math.floor(20*f);s++){
+      const pp = gcInterpolate(a0.lat, a0.lon, a1.lat, a1.lon, s/20);
+      wake.push([pp.lat, pp.lon]);
+    }
+  }
+
+  /* Phase 2: Corner to collision */
+  else if(gmtShipNow.getTime() < COLLISION_GMT.getTime()){
+    const f = Math.max(0, Math.min(1, (gmtShipNow.getTime() - CORNER_GMT.getTime()) / (COLLISION_GMT.getTime() - CORNER_GMT.getTime())));
+
+    pos = rhumbInterpolate(CORNER_POS.lat, CORNER_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, f);
+    head = POST_CORNER_HEADING;
+    speedDisplay = COLLISION_SPEED_KTS.toFixed(1) + ' kn';
+
+    for(let i=0;i<anchors.length-1;i++){
+      const p0 = anchors[i], p1 = anchors[i+1];
+      for(let s=0;s<20;s++){
+        const pp = gcInterpolate(p0.lat, p0.lon, p1.lat, p1.lon, s/20);
+        wake.push([pp.lat, pp.lon]);
+      }
+    }
+
+    for(let s=0;s<Math.floor(40*f);s++){
+      const pp = rhumbInterpolate(CORNER_POS.lat, CORNER_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
+      wake.push([pp.lat, pp.lon]);
+    }
+  }
+
+  /* Phase 3: collision to foundering / wreck vicinity drift */
+  else if(gmtShipNow.getTime() < SINKING_GMT.getTime()){
+    const f = Math.max(0, Math.min(1, (gmtShipNow.getTime() - COLLISION_GMT.getTime()) / (SINKING_GMT.getTime() - COLLISION_GMT.getTime())));
+
+    pos = gcInterpolate(COLLISION_POINT.lat, COLLISION_POINT.lon, WRECK_SITE.lat, WRECK_SITE.lon, f);
+    head = bearing(COLLISION_POINT.lat, COLLISION_POINT.lon, WRECK_SITE.lat, WRECK_SITE.lon);
+    speedDisplay = 'Stopped / drifting';
+
+    for(let i=0;i<anchors.length-1;i++){
+      const p0 = anchors[i], p1 = anchors[i+1];
+      for(let s=0;s<20;s++){
+        const pp = gcInterpolate(p0.lat, p0.lon, p1.lat, p1.lon, s/20);
+        wake.push([pp.lat, pp.lon]);
+      }
+    }
+
+    for(let s=0;s<=40;s++){
+      const pp = rhumbInterpolate(CORNER_POS.lat, CORNER_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
+      wake.push([pp.lat, pp.lon]);
+    }
+
+    for(let s=0;s<Math.floor(24*f);s++){
+      const pp = gcInterpolate(COLLISION_POINT.lat, COLLISION_POINT.lon, WRECK_SITE.lat, WRECK_SITE.lon, s/24);
+      wake.push([pp.lat, pp.lon]);
+    }
+  }
+
+  /* Phase 4: after foundering */
+  else {
+    pos = { lat: WRECK_SITE.lat, lon: WRECK_SITE.lon };
+    head = bearing(COLLISION_POINT.lat, COLLISION_POINT.lon, WRECK_SITE.lat, WRECK_SITE.lon);
+    speedDisplay = '—';
+
+    for(let i=0;i<anchors.length-1;i++){
+      const p0 = anchors[i], p1 = anchors[i+1];
+      for(let s=0;s<20;s++){
+        const pp = gcInterpolate(p0.lat, p0.lon, p1.lat, p1.lon, s/20);
+        wake.push([pp.lat, pp.lon]);
+      }
+    }
+
+    for(let s=0;s<=40;s++){
+      const pp = rhumbInterpolate(CORNER_POS.lat, CORNER_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
+      wake.push([pp.lat, pp.lon]);
+    }
+
+    for(let s=0;s<=24;s++){
+      const pp = gcInterpolate(COLLISION_POINT.lat, COLLISION_POINT.lon, WRECK_SITE.lat, WRECK_SITE.lon, s/24);
+      wake.push([pp.lat, pp.lon]);
+    }
+  }
+
+  wake.push([pos.lat, pos.lon]);
+
+  const actualSoFar = PRE_ROUTE_PTS.concat(wake);
+  const planned = buildPlannedRouteAhead(pos, gmtShipNow);
+
+  const distanceDoneNm = sumPolylineNm(actualSoFar);
+  const distanceToGoNm = planned.length > 1 ? sumPolylineNm(planned) : 0;
+
+  const officer = getOfficerInfo(displayedShipClock);
+
+  document.getElementById('shipTime').textContent        = friendlyClock(displayedShipClock, 'UTC', 'ATS');
+  document.getElementById('currentTime').textContent     = friendlyClock(now, 'Europe/London', 'BST');
+  document.getElementById('headingVal').textContent      = head.toFixed(0) + '°';
+  document.getElementById('speedVal').textContent        = speedDisplay;
+  document.getElementById('distanceDoneVal').textContent = Math.round(distanceDoneNm).toLocaleString('en-GB') + ' nm';
+  document.getElementById('distanceToGoVal').textContent = Math.round(distanceToGoNm).toLocaleString('en-GB') + ' nm';
+
+  document.getElementById('oowRank').textContent = officer.rank;
+  document.getElementById('oowVal').textContent = officer.name;
+  document.getElementById('oowWatch').textContent = officer.watch;
+  document.getElementById('oowStripes').innerHTML = buildRankSvg(officer.stripes);
+  setOfficerImage(officer.image, officer.rank + '\n' + officer.name);
+
+  updateJuniorWatchWidget(displayedShipClock);
+  updateWeatherWidget(displayedShipClock);
+  updateWirelessWidget(displayedShipClock);
+  updateEngineWidget(displayedShipClock);
+
+  actualLine.setLatLngs(wake);
+  plannedLine.setLatLngs(planned);
+
+  if(!shipMarker){
+    shipMarker = L.marker([pos.lat, pos.lon], {
+      icon: shipDivIcon(head),
+      keyboard: false
+    }).addTo(map);
+  } else {
+    shipMarker.setLatLng([pos.lat, pos.lon]);
+    shipMarker.setIcon(shipDivIcon(head));
+  }
+
+  const bergPos = getBergPosition(gmtShipNow);
+  if(!bergMarker){
+    bergMarker = L.marker([bergPos.lat, bergPos.lon], {
+      icon: bergDivIcon(),
+      keyboard:false
+    }).bindTooltip('Representative iceberg', {direction:'top', opacity:0.85}).addTo(map);
+  } else {
+    bergMarker.setLatLng([bergPos.lat, bergPos.lon]);
+  }
+}
+
+/* =========================
+   UI EVENTS
+========================= */
+
+document.getElementById('updateBtn').addEventListener('click', function(){
+  samplePortal();
+  map.invalidateSize();
+});
+
+document.getElementById('liveBtn').addEventListener('click', function(){
+  setPlaybackLive();
+  samplePortal();
+});
+
+document.getElementById('ffBtn').addEventListener('click', function(){
+  setPlaybackForward();
+  samplePortal();
+});
+
+document.getElementById('rewindBtn').addEventListener('click', function(){
+  setPlaybackRewind();
+  samplePortal();
+});
+
+document.getElementById('pauseBtn').addEventListener('click', function(){
+  setPlaybackPause();
+  samplePortal();
+});
+
+document.getElementById('speedSlider').addEventListener('input', function(e){
+  playbackRate = SPEED_STEPS[Number(e.target.value)];
+  document.getElementById('speedLabel').textContent = `${playbackRate}×`;
+  updatePlaybackStatus();
+});
+
+/* =========================
+   START
+========================= */
+
+document.getElementById('speedLabel').textContent = `${playbackRate}×`;
+setPlaybackLive();
+samplePortal();
+setInterval(samplePortal, 1000);
+</script>
+</body>
+</html>
