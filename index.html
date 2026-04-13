@@ -675,6 +675,40 @@
       height: 18px;
     }
 
+    .ship-marker-wrap {
+      position: relative;
+      width: 120px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ship-coords {
+      position: absolute;
+      top: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      line-height: 1;
+      color: #f5ead0;
+      background: rgba(10, 14, 20, 0.78);
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(199,169,104,0.45);
+      white-space: nowrap;
+      font-family: Georgia, "Times New Roman", serif;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .ship-arrow {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform-origin: 50% 50%;
+    }
+
     .berg-icon-wrap {
       width: 16px;
       height: 16px;
@@ -927,6 +961,22 @@ const POST_CORNER_DISTANCE_NM = COLLISION_SPEED_KTS * POST_CORNER_DURATION_HOURS
 
 function toRad(d){ return d * Math.PI / 180; }
 function toDeg(r){ return r * 180 / Math.PI; }
+
+  function formatCoord(value, isLat){
+  const hemi = isLat
+    ? (value >= 0 ? 'N' : 'S')
+    : (value >= 0 ? 'E' : 'W');
+
+  const abs = Math.abs(value);
+  const deg = Math.floor(abs);
+  const mins = (abs - deg) * 60;
+
+  return `${deg}°${String(Math.round(mins)).padStart(2, '0')}′${hemi}`;
+}
+
+function formatLatLon(lat, lon){
+  return `${formatCoord(lat, true)}, ${formatCoord(lon, false)}`;
+}
 
 function haversineNm(lat1, lon1, lat2, lon2){
   const phi1 = toRad(lat1), phi2 = toRad(lat2);
@@ -2031,18 +2081,24 @@ let bergMarker = null;
   }).bindTooltip(s.label, {direction:'top', opacity:0.85}).addTo(map);
 });
 
-function shipDivIcon(heading){
+function shipDivIcon(heading, lat, lon){
+  const coordText = formatLatLon(lat, lon);
+
   const html = `
-    <div class="ship-icon-wrap" style="transform: rotate(${heading}deg);">
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-        <polygon points="12,2 22,22 12,18 2,22" fill="#df4747"></polygon>
-      </svg>
+    <div class="ship-marker-wrap">
+      <div class="ship-coords">${coordText}</div>
+      <div class="ship-arrow" style="transform: translateX(-50%) rotate(${heading}deg);">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <polygon points="12,2 22,22 12,18 2,22" fill="#df4747"></polygon>
+        </svg>
+      </div>
     </div>`;
+
   return L.divIcon({
     className:'ship-icon',
     html:html,
-    iconSize:[18,18],
-    iconAnchor:[9,9]
+    iconSize:[120,42],
+    iconAnchor:[60,30]
   });
 }
 
@@ -2322,13 +2378,14 @@ function samplePortal(){
 
   if(!shipMarker){
     shipMarker = L.marker([pos.lat, pos.lon], {
-      icon: shipDivIcon(head),
+      icon: shipDivIcon(head, pos.lat, pos.lon),
       keyboard: false
     }).addTo(map);
   } else {
     shipMarker.setLatLng([pos.lat, pos.lon]);
-    shipMarker.setIcon(shipDivIcon(head));
+    shipMarker.setIcon(shipDivIcon(head, pos.lat, pos.lon));
   }
+
 
   const bergPos = getBergPosition(gmtShipNow);
   if(!bergMarker){
