@@ -1167,25 +1167,33 @@ const PRE_ROUTE_PTS = [
 ];
 
 /* Softer, less square approximation of reported ice region */
-const ICE_ZONE = [
-  [42.30, -50.95],
-  [42.25, -50.70],
-  [42.20, -50.38],
-  [42.16, -50.08],
-  [42.09, -49.76],
-  [42.00, -49.42],
-  [41.88, -49.10],
-  [41.72, -48.96],
-  [41.54, -49.06],
-  [41.38, -49.28],
-  [41.26, -49.60],
-  [41.24, -49.96],
-  [41.30, -50.28],
-  [41.44, -50.56],
-  [41.64, -50.82],
-  [41.92, -50.98]
+const ICE_ZONE_BASE = [
+  [42.35, -51.00],
+  [42.35, -49.00],
+  [41.95, -48.95],
+  [41.25, -49.30],
+  [41.25, -50.30],
+  [41.60, -51.00]
 ];
 
+const ICE_ZONE_ANCHOR_GMT = Date.parse('1912-04-14T14:58:00Z');
+const ICE_ZONE_DRIFT_BEARING = 210;
+const ICE_ZONE_DRIFT_NM_PER_DAY = 12;
+function getIceZone(gmtShipNow){
+  const daysFromAnchor =
+    (gmtShipNow.getTime() - ICE_ZONE_ANCHOR_GMT) / 86400000;
+
+  const driftNm = Math.abs(daysFromAnchor) * ICE_ZONE_DRIFT_NM_PER_DAY;
+  const bearing = daysFromAnchor >= 0
+    ? ICE_ZONE_DRIFT_BEARING
+    : (ICE_ZONE_DRIFT_BEARING + 180) % 360;
+
+  return ICE_ZONE_BASE.map(function(pt){
+    const shifted = destinationPointNm(pt[0], pt[1], bearing, driftNm);
+    return [shifted.lat, shifted.lon];
+  });
+}
+  
 /* =========================
    PLAYBACK CONTROL
 ========================= */
@@ -2052,13 +2060,13 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 
 L.polyline(PRE_ROUTE_PTS, { color:'#8f2a2a', weight:2, opacity:0.85 }).addTo(map);
 
-L.polygon(ICE_ZONE, {
+let iceZonePolygon = L.polygon([], {
   color: '#6fb6ff',
   weight: 1,
   opacity: 0.22,
   fillColor: '#6fb6ff',
   fillOpacity: 0.12
-}).bindTooltip('Approximate reported ice region', {sticky:true}).addTo(map);
+}).bindTooltip('Approximate reported ice danger zone', { sticky:true }).addTo(map);
 
 let actualLine  = L.polyline([], { color:'#df4747', weight:2, opacity:0.95 }).addTo(map);
 let plannedLine = L.polyline([], { color:'#d1cfc7', weight:2, opacity:0.62, dashArray:'8 8' }).addTo(map);
@@ -2239,8 +2247,12 @@ function samplePortal(){
   const gmtShipNow = getControlledShipGmtNow();
   const displayedShipClock = getDisplayedShipClock(gmtShipNow);
 
+  const liveIceZone = getIceZone(gmtShipNow);
+  iceZonePolygon.setLatLngs(liveIceZone);
+
   let pos, head, speedDisplay;
   let wake = [];
+
 
   /* Phase 1: up to the Corner */
   if(gmtShipNow.getTime() <= CORNER_GMT.getTime()){
