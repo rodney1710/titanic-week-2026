@@ -932,6 +932,7 @@ const EARTH_RADIUS_NM = 3440.065;
 
 /* Route constants from / aligned with Keeping Track */
 const CORNER_POS = { lat: 42.0, lon: -47.0 };
+const ALTER_COURSE_POS = { lat: 41.933333, lon: -47.066667 }; // 41°56'N, 47°04'W reconstructed effective turn point
 const NANTUCKET_POINT = { lat: 40 + 35/60, lon: -(69 + 36.5/60) }; // 40°35'N, 69°36.5'W
 const AMBROSE_POINT = { lat: 40 + 28/60, lon: -(73 + 50/60) };     // 40°28'N, 73°50'W
 const NYC = { lat: 40.4500, lon: -73.8000 };
@@ -1114,8 +1115,8 @@ function fluctuatingSpeed(base, legFrac, legIndex, amp=0.8){
 
 /* Derived collision point from Corner + post-corner leg */
 const COLLISION_POINT = rhumbDestination(
-  CORNER_POS.lat,
-  CORNER_POS.lon,
+  ALTER_COURSE_POS.lat,
+  ALTER_COURSE_POS.lon,
   POST_CORNER_HEADING,
   POST_CORNER_DISTANCE_NM
 );
@@ -2175,14 +2176,14 @@ function buildPlannedRouteAhead(pos, gmtShipNow){
     return [];
   }
 
-  if(gmtShipNow.getTime() < CORNER_GMT.getTime()){
+if(gmtShipNow.getTime() < CORNER_GMT.getTime()){
     const gcPart = densifyGcPath([
       {lat:pos.lat, lon:pos.lon},
-      {lat:CORNER_POS.lat, lon:CORNER_POS.lon}
+      {lat:ALTER_COURSE_POS.lat, lon:ALTER_COURSE_POS.lon}
     ], 28);
 
     const rhumbPart = densifyRhumbPath([
-      {lat:CORNER_POS.lat, lon:CORNER_POS.lon},
+      {lat:ALTER_COURSE_POS.lat, lon:ALTER_COURSE_POS.lon},
       {lat:NANTUCKET_POINT.lat, lon:NANTUCKET_POINT.lon},
       {lat:AMBROSE_POINT.lat, lon:AMBROSE_POINT.lon}
     ], 28);
@@ -2292,10 +2293,10 @@ function samplePortal(){
   }
 
   /* Phase 2: Corner to collision */
-  else if(gmtShipNow.getTime() < COLLISION_GMT.getTime()){
+else if(gmtShipNow.getTime() < COLLISION_GMT.getTime()){
     const f = Math.max(0, Math.min(1, (gmtShipNow.getTime() - CORNER_GMT.getTime()) / (COLLISION_GMT.getTime() - CORNER_GMT.getTime())));
 
-    pos = rhumbInterpolate(CORNER_POS.lat, CORNER_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, f);
+    pos = rhumbInterpolate(ALTER_COURSE_POS.lat, ALTER_COURSE_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, f);
     head = POST_CORNER_HEADING;
     speedDisplay = COLLISION_SPEED_KTS.toFixed(1) + ' kn';
 
@@ -2308,7 +2309,7 @@ function samplePortal(){
     }
 
     for(let s=0;s<Math.floor(40*f);s++){
-      const pp = rhumbInterpolate(CORNER_POS.lat, CORNER_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
+      const pp = rhumbInterpolate(ALTER_COURSE_POS.lat, ALTER_COURSE_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
       wake.push([pp.lat, pp.lon]);
     }
   }
@@ -2355,7 +2356,7 @@ function samplePortal(){
     }
 
     for(let s=0;s<=40;s++){
-      const pp = rhumbInterpolate(CORNER_POS.lat, CORNER_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
+      const pp = rhumbInterpolate(ALTER_COURSE_POS.lat, ALTER_COURSE_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
       wake.push([pp.lat, pp.lon]);
     }
 
