@@ -927,14 +927,17 @@
 
 const REAL_ANCHOR_UTC_MS = Date.parse('2026-04-11T14:20:00Z');
 const SHIP_ANCHOR_GMT = new Date(Date.UTC(1912, 3, 11, 14, 20, 0)); // 11 Apr 1912 14:20 GMT off Daunt Rock
+const TURN_ATS = new Date(Date.UTC(1912, 3, 14, 17, 50, 0));
+const TURN_GMT = new Date(TURN_ATS.getTime() + 178 * 60000);
+
 
 const EARTH_RADIUS_NM = 3440.065;
 
 /* Route constants from / aligned with Keeping Track */
-const CORNER_POS = { lat: 42.0, lon: -47.0 }; // official chart Corner
-const EFFECTIVE_TURN_POS = { lat: 41.928333, lon: -47.041667 }; // best-fit effective turn: 41°55.7'N, 47°02.5'W
-const NANTUCKET_POINT = { lat: 40 + 35/60, lon: -(69 + 36.5/60) }; // 40°35'N, 69°36.5'W
-const AMBROSE_POINT = { lat: 40 + 28/60, lon: -(73 + 50/60) };     // 40°28'N, 73°50'W
+const CORNER_POS = { lat: 42.0, lon: -47.0 }; // official chart Corner (reference only)
+const EFFECTIVE_TURN_POS = { lat: 41.928333, lon: -47.041667 }; // 41°55.7'N, 47°02.5'W
+const NANTUCKET_POINT = { lat: 40 + 35/60, lon: -(69 + 36.5/60) };
+const AMBROSE_POINT = { lat: 40 + 28/60, lon: -(73 + 50/60) };
 const NYC = { lat: 40.4500, lon: -73.8000 };
 
 /* Model B timing */
@@ -953,8 +956,8 @@ const WRECK_SITE = { lat: 41 + 43.9/60, lon: -(49 + 56.8/60) };
 /* Post-corner leg */
 const POST_CORNER_HEADING = 265.5;
 const COLLISION_SPEED_KTS = 22.3;
-const POST_CORNER_DURATION_HOURS = 5 + 50/60;
-const POST_CORNER_DISTANCE_NM = COLLISION_SPEED_KTS * POST_CORNER_DURATION_HOURS;
+const POST_TURN_DURATION_HOURS = 5 + 50/60;
+const POST_TURN_DISTANCE_NM = COLLISION_SPEED_KTS * POST_TURN_DURATION_HOURS;
 
 /* =========================
    GEO HELPERS
@@ -1121,13 +1124,15 @@ const COLLISION_POINT = rhumbDestination(
   POST_TURN_DISTANCE_NM
 );
 
-/* Anchors up to the Corner */
+/* Anchors up to the effective turn */
 const anchors = [
   { gmt:'1912-04-11T14:20:00Z', lat:51.716667, lon:-8.266667, base_speed:21.0 },
   { gmt:'1912-04-11T17:10:00Z', lat:51.383333, lon:-9.600000, base_speed:21.0 },
+
   { gmt:'1912-04-12T13:24:00Z', lat:50.100000, lon:-20.716667, base_speed:20.9 },
   { gmt:'1912-04-13T14:13:00Z', lat:47.366667, lon:-33.166667, base_speed:20.9 },
   { gmt:'1912-04-14T14:58:00Z', lat:43.033333, lon:-44.516667, base_speed:22.1 },
+
   { gmt: TURN_GMT.toISOString(), lat: EFFECTIVE_TURN_POS.lat, lon: EFFECTIVE_TURN_POS.lon, base_speed:22.3 }
 ].map(a => ({ ...a, gmtMs: Date.parse(a.gmt) }));
 
@@ -2177,19 +2182,19 @@ function buildPlannedRouteAhead(pos, gmtShipNow){
   }
 
 if(gmtShipNow.getTime() < TURN_GMT.getTime()){
-    const gcPart = densifyGcPath([
-      {lat:pos.lat, lon:pos.lon},
-      {lat:EFFECTIVE_TURN_POS.lat, lon:EFFECTIVE_TURN_POS.lon}
-    ], 28);
+  const gcPart = densifyGcPath([
+    {lat:pos.lat, lon:pos.lon},
+    {lat:EFFECTIVE_TURN_POS.lat, lon:EFFECTIVE_TURN_POS.lon}
+  ], 28);
 
-    const rhumbPart = densifyRhumbPath([
-      {lat:EFFECTIVE_TURN_POS.lat, lon:EFFECTIVE_TURN_POS.lon},
-      {lat:NANTUCKET_POINT.lat, lon:NANTUCKET_POINT.lon},
-      {lat:AMBROSE_POINT.lat, lon:AMBROSE_POINT.lon}
-    ], 28);
+  const rhumbPart = densifyRhumbPath([
+    {lat:EFFECTIVE_TURN_POS.lat, lon:EFFECTIVE_TURN_POS.lon},
+    {lat:NANTUCKET_POINT.lat, lon:NANTUCKET_POINT.lon},
+    {lat:AMBROSE_POINT.lat, lon:AMBROSE_POINT.lon}
+  ], 28);
 
-    return gcPart.concat(rhumbPart);
-  }
+  return gcPart.concat(rhumbPart);
+}
 
   const rhumbPart = densifyRhumbPath([
     {lat:pos.lat, lon:pos.lon},
@@ -2294,11 +2299,23 @@ function samplePortal(){
 
   /* Phase 2: Corner to collision */
 else if(gmtShipNow.getTime() < COLLISION_GMT.getTime()){
-    const f = Math.max(0, Math.min(1, (gmtShipNow.getTime() - TURN_GMT.getTime()) / (COLLISION_GMT.getTime() - TURN_GMT.getTime())));
+  const f = Math.max(
+    0,
+    Math.min(
+      1,
+      (gmtShipNow.getTime() - TURN_GMT.getTime()) /
+      (COLLISION_GMT.getTime() - TURN_GMT.getTime())
+    )
+  );
 
-    pos = rhumbInterpolate(EFFECTIVE_TURN_POS.lat, EFFECTIVE_TURN_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, f);
-    head = POST_CORNER_HEADING;
-    speedDisplay = COLLISION_SPEED_KTS.toFixed(1) + ' kn';
+  pos = rhumbInterpolate(
+    EFFECTIVE_TURN_POS.lat, EFFECTIVE_TURN_POS.lon,
+    COLLISION_POINT.lat, COLLISION_POINT.lon,
+    f
+  );
+
+  head = POST_CORNER_HEADING;
+  speedDisplay = COLLISION_SPEED_KTS.toFixed(1) + ' kn';
 
     for(let i=0;i<anchors.length-1;i++){
       const p0 = anchors[i], p1 = anchors[i+1];
@@ -2309,7 +2326,7 @@ else if(gmtShipNow.getTime() < COLLISION_GMT.getTime()){
     }
 
     for(let s=0;s<Math.floor(40*f);s++){
-      const pp = rhumbInterpolate(ALTER_COURSE_POS.lat, ALTER_COURSE_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
+      const pp = rhumbInterpolate(EFFECTIVE_TURN_POS.lat, EFFECTIVE_TURN_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
       wake.push([pp.lat, pp.lon]);
     }
   }
@@ -2356,7 +2373,7 @@ else if(gmtShipNow.getTime() < COLLISION_GMT.getTime()){
     }
 
     for(let s=0;s<=40;s++){
-      const pp = rhumbInterpolate(ALTER_COURSE_POS.lat, ALTER_COURSE_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
+      const pp = rhumbInterpolate(EFFECTIVE_TURN_POS.lat, EFFECTIVE_TURN_POS.lon, COLLISION_POINT.lat, COLLISION_POINT.lon, s/40);
       wake.push([pp.lat, pp.lon]);
     }
 
