@@ -2204,9 +2204,18 @@ function buildPlannedRouteAhead(pos, gmtShipNow){
 ========================= */
 
 const BERG_START_GMT = new Date(Date.UTC(1912, 3, 11, 14, 20, 0));
-const BERG_START_POS = { lat: 42.55, lon: -49.20 };
-const BERG_DRIFT_BEARING = 196;
-const BERG_DRIFT_SPEED_KN = 1.3;
+const BERG_DRIFT_BEARING = 210;
+const BERG_DRIFT_SPEED_KN = 1.0;
+
+const BERG_PRE_COLLISION_HOURS =
+  (COLLISION_GMT.getTime() - BERG_START_GMT.getTime()) / 3600000;
+
+const BERG_START_POS = destinationPointNm(
+  COLLISION_POINT.lat,
+  COLLISION_POINT.lon,
+  (BERG_DRIFT_BEARING + 180) % 360,
+  BERG_DRIFT_SPEED_KN * BERG_PRE_COLLISION_HOURS
+);
 
 function destinationPointNm(lat, lon, bearingDeg, distNm){
   const br = toRad(bearingDeg);
