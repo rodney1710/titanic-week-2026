@@ -1722,7 +1722,7 @@ const WIRELESS_MESSAGES = [
 
   {
     ats: "1912-04-14T11:47:00Z",
-    type: "Relayed ice warning",
+    type: "Ice warning",
     from: "Noordam (via Caronia)",
     to: "Titanic",
     delivered: "Relayed warning",
@@ -1731,7 +1731,7 @@ const WIRELESS_MESSAGES = [
 
   {
     ats: "1912-04-14T13:49:00Z",
-    type: "Relay message",
+    type: "Ice warning",
     from: "Amerika",
     to: "Titanic (for re-transmission)",
     delivered: "Handled in wireless traffic / relay via Titanic",
@@ -1749,7 +1749,7 @@ const WIRELESS_MESSAGES = [
 
   {
     ats: "1912-04-14T19:37:00Z",
-    type: "Intercepted / delivered warning",
+    type: "Ice warning",
     from: "Californian",
     to: "Antillian (intercepted by Titanic)",
     delivered: "Jotted by Bride and taken to the bridge within minutes",
@@ -1758,7 +1758,7 @@ const WIRELESS_MESSAGES = [
 
   {
     ats: "1912-04-14T21:52:00Z",
-    type: "Major ice warning",
+    type: "Ice warning",
     from: "Mesaba",
     to: "Titanic",
     delivered: "Received by wireless room; apparently not taken to bridge",
@@ -1767,83 +1767,227 @@ const WIRELESS_MESSAGES = [
 
   {
     ats: "1912-04-14T23:07:00Z",
-    type: "Immediate ice proximity message",
+    type: "Ice warning",
     from: "Californian",
     to: "Titanic",
     delivered: "Operator only",
     text: "We are stopped and surrounded by ice."
   },
-
-  {
-    ats: "1912-04-14T23:40:00Z",
-    type: "Collision event",
-    from: "—",
-    to: "—",
-    delivered: "Iceberg impact",
-    text: "Titanic collides with the iceberg."
-  },
-
   {
     ats: "1912-04-15T00:15:00Z",
     type: "Distress traffic",
     from: "Titanic",
     to: "All ships",
-    delivered: "Received by multiple ships and shore stations",
-    text: "CQD CQD CQD. Require immediate assistance."
+    delivered: "Received by multiple ships",
+    text: "CQD CQD CQD DE MGY. Position 41.44 N 50.24 W."
   },
-
   {
     ats: "1912-04-15T00:25:00Z",
     type: "Distress traffic",
     from: "Titanic",
-    to: "Carpathia",
-    delivered: "Received by Carpathia; Carpathia turns and responds",
-    text: "Come at once. We have struck a berg. It's a C.Q.D. O.M. Position 41.46 N. 50.14 W."
+    to: "All ships",
+    delivered: "Received by multiple ships",
+    text: "CQD. Require immediate assistance. Position 41.46 N 50.14 W."
   },
-
+  {
+    ats: "1912-04-15T00:25:30Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "Carpathia",
+    delivered: "Received and acknowledged",
+    text: "Come at once. We have struck a berg. It's a CQD. Position 41.46 N 50.14 W."
+  },
   {
     ats: "1912-04-15T00:26:00Z",
     type: "Distress traffic",
+    from: "Carpathia",
+    to: "Titanic",
+    delivered: "Received",
+    text: "Coming at full speed."
+  },
+  {
+    ats: "1912-04-15T00:27:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "Multiple ships",
+    delivered: "Received by nearby vessels",
+    text: "Require immediate assistance. We have collision with iceberg. Sinking."
+  },
+  {
+    ats: "1912-04-15T00:30:00Z",
+    type: "Distress traffic",
+    from: "Frankfurt",
+    to: "Titanic",
+    delivered: "Received",
+    text: "What is the matter?"
+  },
+  {
+    ats: "1912-04-15T00:30:30Z",
+    type: "Distress traffic",
     from: "Titanic",
     to: "All ships",
-    delivered: "Broadcast / heard by multiple stations",
-    text: "C.Q.D. Here corrected position 41.46 N. 50.14 W. Require immediate assistance. We have collision with iceberg. Sinking. Can nothing hear for noise of steam."
+    delivered: "Partially received",
+    text: "Cannot hear for noise of steam."
   },
-
+  {
+    ats: "1912-04-15T00:35:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "Frankfurt",
+    delivered: "Received with delay",
+    text: "We have struck iceberg and sinking. Please tell captain to come."
+  },
   {
     ats: "1912-04-15T00:36:00Z",
-    type: "Distress exchange",
-    from: "Titanic / Frankfurt",
-    to: "Frankfurt / Titanic",
-    delivered: "Exchange received",
-    text: "Frankfurt: 'What is the matter with u?' Titanic: 'We have collision with iceberg. Sinking. Please tell Captain to come.'"
+    type: "Distress traffic",
+    from: "Frankfurt",
+    to: "Titanic",
+    delivered: "Received",
+    text: "What is your position?"
   },
-
+  {
+    ats: "1912-04-15T00:40:00Z",
+    type: "Distress traffic",
+    from: "Olympic",
+    to: "Titanic",
+    delivered: "Received",
+    text: "Are you in collision?"
+  },
+  {
+    ats: "1912-04-15T00:45:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Widely received",
+    text: "SOS SOS CQD CQD. Require immediate assistance."
+  },
+  {
+    ats: "1912-04-15T01:00:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "Olympic",
+    delivered: "Received",
+    text: "We have struck an iceberg."
+  },
+  {
+    ats: "1912-04-15T01:05:00Z",
+    type: "Distress traffic",
+    from: "Olympic",
+    to: "Titanic",
+    delivered: "Received",
+    text: "Am lighting all boilers as fast as possible to reach you."
+  },
+  {
+    ats: "1912-04-15T01:10:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "Olympic",
+    delivered: "Received",
+    text: "We are in collision with berg. Sinking head down. Come as soon as possible."
+  },
+  {
+    ats: "1912-04-15T01:15:00Z",
+    type: "Distress traffic",
+    from: "Baltic",
+    to: "Titanic",
+    delivered: "Received",
+    text: "Have you struck iceberg?"
+  },
+  {
+    ats: "1912-04-15T01:20:00Z",
+    type: "Distress traffic",
+    from: "Mount Temple",
+    to: "Titanic",
+    delivered: "Received",
+    text: "We are coming to you."
+  },
   {
     ats: "1912-04-15T01:25:00Z",
     type: "Distress traffic",
     from: "Titanic",
     to: "All ships",
-    delivered: "Heard in ongoing wireless traffic",
-    text: "We are getting the women off in small boats."
+    delivered: "Received by several ships",
+    text: "We are putting the women off in the boats."
   },
-
   {
-    ats: "1912-04-15T01:35:00Z",
-    type: "Critical distress update",
+    ats: "1912-04-15T01:30:00Z",
+    type: "Distress traffic",
     from: "Titanic",
     to: "All ships",
-    delivered: "Heard in ongoing wireless traffic",
+    delivered: "Received intermittently",
+    text: "We are putting passengers off in small boats."
+  },
+  {
+    ats: "1912-04-15T01:30:30Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Weak but received",
+    text: "Women and children in boats. Cannot last much longer. Losing power."
+  },
+  {
+    ats: "1912-04-15T01:35:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Received",
     text: "Engine room getting flooded."
   },
-
   {
-    ats: "1912-04-15T02:20:00Z",
-    type: "End of voyage",
-    from: "—",
-    to: "—",
-    delivered: "Ship lost",
-    text: "Titanic sinks."
+    ats: "1912-04-15T01:40:00Z",
+    type: "Distress traffic",
+    from: "Carpathia",
+    to: "Titanic",
+    delivered: "Uncertain if received",
+    text: "Am coming as quickly as possible."
+  },
+  {
+    ats: "1912-04-15T01:45:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Received (last strong signal)",
+    text: "Engine room full up to boilers."
+  },
+  {
+    ats: "1912-04-15T01:50:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "Carpathia",
+    delivered: "Received",
+    text: "Come as quickly as possible. Engine room filling to boilers."
+  },
+  {
+    ats: "1912-04-15T01:55:00Z",
+    type: "Distress traffic",
+    from: "Frankfurt",
+    to: "Titanic",
+    delivered: "No reply",
+    text: "What is the matter with you?"
+  },
+  {
+    ats: "1912-04-15T02:00:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Faint reception",
+    text: "We are sinking fast."
+  },
+  {
+    ats: "1912-04-15T02:05:00Z",
+    type: "Distress traffic",
+    from: "Multiple ships",
+    to: "All ships",
+    delivered: "Relayed",
+    text: "Titanic sinking. Position 41.46 N 50.14 W."
+  },
+  {
+    ats: "1912-04-15T02:17:00Z",
+    type: "Distress traffic",
+    from: "Titanic",
+    to: "All ships",
+    delivered: "Signal lost",
+    text: "CQD... CQD... this is Titanic..."
   }
 ];
 
