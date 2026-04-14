@@ -1076,6 +1076,70 @@
   min-height: 28px;
 }
 
+    .lb-map-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lb-map-row {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 7px;
+  align-items: center;
+}
+
+.lb-map-row-centre {
+  display: flex;
+  justify-content: center;
+  padding: 1px 0 2px;
+}
+
+.lb-map-side-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #d8cfbd;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.lb-map-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  min-height: 16px;
+}
+
+.lb-map-inline-centre {
+  justify-content: center;
+  gap: 6px;
+}
+
+.lb-map-boatwrap {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.lb-map-label {
+  font-size: 8px;
+  line-height: 1;
+  color: #e8deca;
+  min-width: 8px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.lb-map-gap-inline {
+  width: 12px;
+  height: 1px;
+  flex: 0 0 auto;
+}
 
   </style>
 </head>
@@ -2576,11 +2640,9 @@ const LIFEBOAT_MAP_EVENTS = [
   }
 ].map(e => ({ ...e, atsMs: Date.parse(e.ats) }));
 
-const FORE_PORT_ROW = ["2","D","B"];
-const FORE_STARBOARD_ROW = ["1","C","A"];
-
-const PORT_MAIN_ROW = ["4","6","8","","10","12","14","16"];
-const STARBOARD_MAIN_ROW = ["3","5","7","","9","11","13","15"];
+const STARBOARD_ROW = ["1","3","5","7","","9","11","13","15"];
+const COLLAPSIBLE_ROW = ["C","A","B","D"];
+const PORT_ROW = ["2","4","6","8","","10","12","14","16"];
 
 function getCurrentLifeboatMapState(displayedShipClock){
   const nowMs = displayedShipClock.getTime();
@@ -2636,6 +2698,13 @@ function buildLifeboatMapPanel(displayedShipClock){
   const phase = evt ? evt.phase : 'Collision';
   const ticker = evt ? evt.ticker : 'Damage is being assessed.';
 
+  const collapsibleStates = {
+    C: starboardStates.C || '',
+    A: starboardStates.A || '',
+    B: portStates.B || '',
+    D: portStates.D || ''
+  };
+
   return `
     <div class="lb-map-board">
       <div class="lb-map-head">
@@ -2644,26 +2713,25 @@ function buildLifeboatMapPanel(displayedShipClock){
         <div class="lb-map-phase">${phase}</div>
       </div>
 
-      <div class="lb-map-band">
-        <div class="lb-map-band-label">Fore</div>
-        <div class="lb-map-inline">
-          ${buildBoatInlineMap(FORE_PORT_ROW, portStates)}
-          <div class="lb-map-gap-inline"></div>
-          ${buildBoatInlineMap(FORE_STARBOARD_ROW, starboardStates)}
+      <div class="lb-map-deck">
+        <div class="lb-map-row">
+          <div class="lb-map-side-label">Stbd</div>
+          <div class="lb-map-inline">
+            ${buildBoatInlineMap(STARBOARD_ROW, starboardStates)}
+          </div>
         </div>
-      </div>
 
-      <div class="lb-map-band">
-        <div class="lb-map-band-label">Port</div>
-        <div class="lb-map-inline">
-          ${buildBoatInlineMap(PORT_MAIN_ROW, portStates)}
+        <div class="lb-map-row lb-map-row-centre">
+          <div class="lb-map-inline lb-map-inline-centre">
+            ${buildBoatInlineMap(COLLAPSIBLE_ROW, collapsibleStates)}
+          </div>
         </div>
-      </div>
 
-      <div class="lb-map-band">
-        <div class="lb-map-band-label">Stbd</div>
-        <div class="lb-map-inline">
-          ${buildBoatInlineMap(STARBOARD_MAIN_ROW, starboardStates)}
+        <div class="lb-map-row">
+          <div class="lb-map-side-label">Port</div>
+          <div class="lb-map-inline">
+            ${buildBoatInlineMap(PORT_ROW, portStates)}
+          </div>
         </div>
       </div>
 
@@ -2671,6 +2739,7 @@ function buildLifeboatMapPanel(displayedShipClock){
     </div>
   `;
 }
+  
   /* ============================================
    IMPORTANT INFORMATION BOARD (ATS-DRIVEN)
 ============================================ */
