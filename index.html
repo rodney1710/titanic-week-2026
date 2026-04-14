@@ -903,6 +903,7 @@
 
 .lifeboat-tooltip .leaflet-tooltip-content {
   margin: 0;
+  max-Width: none !important;
 }
 
 /* make Leaflet tooltip pointer match the darker board */
@@ -990,7 +991,7 @@
   align-items: center;
   gap: 4px;
   flex-wrap: nowrap;
-  overflow: hidden;
+  overflow: visible;
   min-height: 16px;
 }
 
@@ -2953,7 +2954,7 @@ function updateLifeboatMapPanel(displayedShipClock){
       direction: 'bottom',
       offset: [0, 18],
       opacity: 1,
-      className: 'lifeboat-tooltip'
+      className: 'lifeboat-tooltip',
       maxWidth: 420
     });
   } else {
