@@ -621,6 +621,27 @@
       grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
+.cat-watch {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.cat-subcard {
+  max-width: 100%;
+}
+
+.cat-subimg,
+.cat-subfallback {
+  width: 62px;
+  height: 62px;
+  border-radius: 8px;
+}
+
+.cat-subimg {
+  object-fit: cover;
+  object-position: center;
+}
 
     @media (max-width: 560px) {
       .watch-team-grid {
@@ -1284,40 +1305,61 @@
             <div class="watch-team-label">Also on watch</div>
 
             <div class="watch-team-grid">
-              <div class="watch-subcard">
-                <img
-                  id="watchAImg"
-                  class="watch-subimg"
-                  src="Joseph-Boxhall.jpg"
-                  alt="Watch officer portrait"
-                />
-                <div id="watchAFallback" class="watch-subfallback">Image unavailable</div>
+  <div class="watch-subcard">
+    <img
+      id="watchAImg"
+      class="watch-subimg"
+      src="Joseph-Boxhall.jpg"
+      alt="Watch officer portrait"
+    />
+    <div id="watchAFallback" class="watch-subfallback">Image unavailable</div>
 
-                <div class="watch-submeta">
-                  <div class="watch-subrank" id="watchARank">Fourth Officer</div>
-                  <div class="watch-subname" id="watchAName">Joseph Boxhall</div>
-                  <div class="watch-substripes" id="watchAStripes"></div>
-                </div>
-              </div>
+    <div class="watch-submeta">
+      <div class="watch-subrank" id="watchARank">Fourth Officer</div>
+      <div class="watch-subname" id="watchAName">Joseph Boxhall</div>
+      <div class="watch-substripes" id="watchAStripes"></div>
+    </div>
+  </div>
 
-              <div class="watch-subcard">
-                <img
-                  id="watchBImg"
-                  class="watch-subimg"
-                  src="James-Moody.jpg"
-                  alt="Watch officer portrait"
-                />
-                <div id="watchBFallback" class="watch-subfallback">Image unavailable</div>
+  <div class="watch-subcard">
+    <img
+      id="watchBImg"
+      class="watch-subimg"
+      src="James-Moody.jpg"
+      alt="Watch officer portrait"
+    />
+    <div id="watchBFallback" class="watch-subfallback">Image unavailable</div>
 
-                <div class="watch-submeta">
-                  <div class="watch-subrank" id="watchBRank">Sixth Officer</div>
-                  <div class="watch-subname" id="watchBName">James Moody</div>
-                  <div class="watch-substripes" id="watchBStripes"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="watch-submeta">
+      <div class="watch-subrank" id="watchBRank">Sixth Officer</div>
+      <div class="watch-subname" id="watchBName">James Moody</div>
+      <div class="watch-substripes" id="watchBStripes"></div>
+    </div>
+  </div>
+</div>
+
+<div class="cat-watch">
+  <div class="watch-team-label">Ship's Cat</div>
+
+  <div class="watch-subcard cat-subcard">
+    <img
+      class="watch-subimg cat-subimg"
+      src="cat.jpg"
+      alt="Ship's cat"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+    />
+    <div class="watch-subfallback cat-subfallback" style="display:none;">
+      Chief Mouseeur
+    </div>
+
+    <div class="watch-submeta">
+      <div class="watch-subrank">Chief Mouser</div>
+      <div class="watch-subname">Jenny (played by Ollie)</div>
+      <div class="officer-sub">Permanent duty · Rodent suppression · Food disposal</div>
+    </div>
+  </div>
+</div>
+</div>
         
        <div class="card run-card-right">
         <img src="wsl-logo.png" class="run-logo" alt="White Star Line logo" />
