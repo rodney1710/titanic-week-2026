@@ -911,7 +911,7 @@
 }
 
 .lb-map-board {
-  width: 294px;
+  width: 360px;
   max-width: 360px;
   background: linear-gradient(180deg, rgba(24, 28, 35, 0.985), rgba(15, 18, 24, 0.985));
   border: 1px solid #6f5c37;
@@ -2954,6 +2954,7 @@ function updateLifeboatMapPanel(displayedShipClock){
       offset: [0, 18],
       opacity: 1,
       className: 'lifeboat-tooltip'
+      maxWidth: 420
     });
   } else {
     shipMarker.setTooltipContent(html);
