@@ -899,11 +899,24 @@
   border: none;
   box-shadow: none;
   color: inherit;
+  white-space: normal !important;
 }
 
 .lifeboat-tooltip .leaflet-tooltip-content {
   margin: 0;
-  max-Width: none !important;
+  max-width: none !important;
+}
+
+.lb-map-ticker {
+  border-top: 1px solid rgba(199,169,104,0.34);
+  margin-top: 7px;
+  padding-top: 6px;
+  font-size: 10px;
+  line-height: 1.38;
+  color: #ece1cb;
+  min-height: 28px;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 /* make Leaflet tooltip pointer match the darker board */
@@ -1033,8 +1046,11 @@
 }
 
 .lb-map-lens.ready {
-  background: #727c88;
-  border-color: #949daa;
+  background: #747b84;
+  border-color: #979ea8;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 0 0 1px rgba(0,0,0,0.08);
 }
 
 .lb-map-lens.loading {
@@ -1046,19 +1062,19 @@
 }
 
 .lb-map-lens.launched {
-  background: linear-gradient(180deg, #5888b3, #446d93);
-  border-color: #89bbdf;
+  background: linear-gradient(180deg, #8c1f1f, #681818);
+  border-color: #b14b4b;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.12),
-    0 0 6px rgba(111,182,255,0.14);
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 0 5px rgba(178,52,52,0.14);
 }
 
 .lb-map-lens.lost {
-  background: linear-gradient(180deg, #9c5555, #7c3d3d);
-  border-color: #d28d8d;
+  background: linear-gradient(180deg, #5f2323, #451717);
+  border-color: #8f4a4a;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 0 5px rgba(178,52,52,0.12);
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 0 4px rgba(120,40,40,0.10);
 }
 
 .lb-map-gap-inline {
