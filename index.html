@@ -206,7 +206,7 @@
       gap: 10px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 760px) {
       .nav-grid {
         grid-template-columns: repeat(2, minmax(0,1fr));
       }
@@ -631,18 +631,6 @@
   max-width: 100%;
 }
 
-.cat-subimg,
-.cat-subfallback {
-  width: 62px;
-  height: 62px;
-  border-radius: 8px;
-}
-
-.cat-subimg {
-  object-fit: cover;
-  object-position: center;
-}
-
     @media (max-width: 560px) {
       .watch-team-grid {
         grid-template-columns: 1fr;
@@ -690,7 +678,18 @@
       flex: 0 0 auto;
       white-space: pre-line;
     }
+    
+.watch-subimg.cat-subimg,
+.watch-subfallback.cat-subfallback {
+  width: 62px;
+  height: 62px;
+  border-radius: 8px;
+}
 
+.watch-subimg.cat-subimg {
+  object-fit: cover;
+  object-position: center;
+}
     .watch-submeta {
       min-width: 0;
       display: flex;
@@ -1189,7 +1188,7 @@
   align-items: center;
   gap: 4px;
   flex-wrap: nowrap;
-  overflow: hidden;
+  overflow: visible;
   min-height: 16px;
 }
 
@@ -1360,8 +1359,9 @@
   </div>
 </div>
 </div>
-        
-       <div class="card run-card-right">
+</div>
+
+<div class="card run-card-right">
         <img src="wsl-logo.png" class="run-logo" alt="White Star Line logo" />
          
         <div id="runNoticeText">
