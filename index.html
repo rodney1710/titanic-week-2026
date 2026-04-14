@@ -2530,7 +2530,13 @@ const LIFEBOAT_MAP_EVENTS = [
   }
 ].map(e => ({ ...e, atsMs: Date.parse(e.ats) }));
 
-  function getCurrentLifeboatMapState(displayedShipClock){
+const FORE_PORT_ROW = ["2","D","B"];
+const FORE_STARBOARD_ROW = ["1","C","A"];
+
+const PORT_MAIN_ROW = ["4","6","8","","10","12","14","16"];
+const STARBOARD_MAIN_ROW = ["3","5","7","","9","11","13","15"];
+
+function getCurrentLifeboatMapState(displayedShipClock){
   const nowMs = displayedShipClock.getTime();
   let current = null;
 
@@ -2618,54 +2624,6 @@ function buildLifeboatMapPanel(displayedShipClock){
             ${buildBoatInlineMap(STARBOARD_MAIN_ROW, starboardStates)}
           </div>
         </div>
-      </div>
-
-      <div class="lb-map-ticker">${ticker}</div>
-    </div>
-  `;
-}
-
-  for(const entry of LIFEBOAT_MAP_EVENTS){
-    if(entry.atsMs <= displayedShipClock.getTime() && entry.boats){
-      if(entry.boats.port){
-        Object.assign(portStates, entry.boats.port);
-      }
-      if(entry.boats.starboard){
-        Object.assign(starboardStates, entry.boats.starboard);
-      }
-    }
-  }
-
-  const phase = evt ? evt.phase : 'Collision';
-  const ticker = evt ? evt.ticker : 'Damage is being assessed.';
-
-  return `
-    <div class="lb-map-board">
-      <div class="lb-map-head">
-        <div class="lb-map-title">Boat Deck Evacuation Board</div>
-        <div class="lb-map-time">${formatAtsMoment(displayedShipClock)}</div>
-        <div class="lb-map-phase">${phase}</div>
-      </div>
-
-      <div class="lb-map-deck">
-        <div class="lb-map-col">
-          ${buildBoatColumnMap(PORT_DECK_ORDER, portStates, 'port')}
-        </div>
-
-        <div class="lb-map-centre">
-          <div class="lb-map-fore">F</div>
-          <div class="lb-map-spine"></div>
-          <div class="lb-map-aft">A</div>
-        </div>
-
-        <div class="lb-map-col">
-          ${buildBoatColumnMap(STARBOARD_DECK_ORDER, starboardStates, 'starboard')}
-        </div>
-      </div>
-
-      <div class="lb-map-collapsibles">
-        ${buildCollapsibleSideMap('Port', PORT_COLLAPSIBLES, portStates)}
-        ${buildCollapsibleSideMap('Stbd', STARBOARD_COLLAPSIBLES, starboardStates)}
       </div>
 
       <div class="lb-map-ticker">${ticker}</div>
