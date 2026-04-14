@@ -2551,92 +2551,182 @@ const LIFEBOAT_MAP_EVENTS = [
     phase: "Boats being readied",
     ticker: "Lifeboats are being uncovered and swung out as the seriousness of the damage becomes clear."
   },
+
+  {
+    ats: "1912-04-15T00:34:00Z",
+    phase: "First boats loading",
+    ticker: "Boat 7 is being loaded on the starboard side as officers try to persuade passengers to board.",
+    boats: {
+      starboard: { "7":"loading" }
+    }
+  },
   {
     ats: "1912-04-15T00:40:00Z",
-    phase: "First launches",
-    ticker: "Boat 7 leaves from the starboard side — the first successful launch.",
+    phase: "First launch",
+    ticker: "Boat 7 leaves from the starboard side — the first lifeboat successfully launched, but badly underfilled.",
     boats: {
-      starboard: { "7":"launched" }
+      starboard: { "7":"launched", "5":"loading" }
     }
   },
   {
     ats: "1912-04-15T00:45:00Z",
     phase: "Early launches",
-    ticker: "Boat 5 follows from starboard; the first boats are leaving with spare capacity.",
+    ticker: "Boat 5 follows from starboard as the evacuation slowly begins to gather momentum.",
     boats: {
-      starboard: { "7":"launched", "5":"launched" }
+      starboard: { "7":"launched", "5":"launched", "3":"loading" }
     }
   },
   {
     ats: "1912-04-15T00:55:00Z",
     phase: "Evacuation building",
-    ticker: "Boat 6 is away on the port side and Boat 3 from starboard.",
+    ticker: "Boat 3 leaves from starboard; loading is now under way on both sides.",
     boats: {
-      port: { "6":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched" }
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"loading" },
+      port: { "8":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T01:00:00Z",
+    phase: "Port side launching",
+    ticker: "Boat 8 is lowered from the port side as the women-and-children-first loading becomes more established.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"loading" },
+      port: { "8":"launched", "6":"loading" }
     }
   },
   {
     ats: "1912-04-15T01:05:00Z",
     phase: "More boats away",
-    ticker: "Boats 8 and 1 are away; the early starboard list is easing.",
+    ticker: "Boat 1 leaves from starboard, infamously underfilled.",
     boats: {
-      port: { "6":"launched", "8":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched" }
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched" },
+      port: { "8":"launched", "6":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T01:10:00Z",
+    phase: "Port boats leaving",
+    ticker: "Boat 6 leaves from port, with tensions already evident in command aboard.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched" },
+      port: { "8":"launched", "6":"launched", "16":"loading" }
     }
   },
   {
     ats: "1912-04-15T01:20:00Z",
-    phase: "Launching more quickly",
-    ticker: "Boat 16 leaves port; Boat 9 follows from starboard as evacuation gathers pace.",
+    phase: "Loading more efficiently",
+    ticker: "Boat 16 is lowered from port; loading efficiency is improving as the danger becomes obvious.",
     boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched" }
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T01:25:00Z",
+    phase: "Pace increasing",
+    ticker: "Boat 14 leaves from port under Fifth Officer Lowe, who later returns to search for survivors.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"loading" }
     }
   },
   {
     ats: "1912-04-15T01:30:00Z",
     phase: "Mid-evacuation",
-    ticker: "Boat 14 goes from port. The seriousness of the situation is now obvious on deck.",
+    ticker: "Boats 12 and 9 are away as the evacuation begins moving in much quicker succession.",
     boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched" }
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "10":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T01:35:00Z",
+    phase: "Boat deck under pressure",
+    ticker: "Boat 11 leaves heavily loaded from starboard while the angle and urgency on deck continue to increase.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"loading", "15":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "10":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T01:40:00Z",
+    phase: "Late heavy loading",
+    ticker: "Boat 13 leaves from starboard, narrowly avoiding disaster with the descending Boat 15 above it.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "10":"loading", "2":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T01:41:00Z",
+    phase: "Late heavy loading",
+    ticker: "Boat 15 follows immediately from starboard, very heavily loaded.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "10":"loading", "2":"loading" }
     }
   },
   {
     ats: "1912-04-15T01:45:00Z",
-    phase: "Boat deck under pressure",
-    ticker: "Boats 13, 15, 2 and 11 are away in quick succession as the final evacuations intensify.",
+    phase: "Final regular boats",
+    ticker: "Boat 2 leaves port, still underfilled despite the worsening situation on deck.",
     boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched", "2":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched" }
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "2":"launched", "10":"loading", "4":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T01:50:00Z",
+    phase: "Final regular boats",
+    ticker: "Boat 10 leaves port carrying many children as the last standard boats go off more efficiently.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "2":"launched", "10":"launched", "4":"loading", "D":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T01:55:00Z",
+    phase: "Last davit boats",
+    ticker: "Boat 4 leaves port after delays in access from the promenade deck.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "2":"launched", "10":"launched", "4":"launched", "D":"loading" }
     }
   },
   {
     ats: "1912-04-15T02:00:00Z",
-    phase: "Final successful launches",
-    ticker: "Collapsible C is away; Boat 4 leaves from port as the remaining clear chances to launch close.",
+    phase: "Collapsibles leaving",
+    ticker: "Collapsible C leaves from starboard amid heavy crowd pressure.",
     boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched", "2":"launched", "4":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched" }
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched", "A":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "2":"launched", "10":"launched", "4":"launched", "D":"loading", "B":"loading" }
     }
   },
   {
     ats: "1912-04-15T02:05:00Z",
-    phase: "Last boat lowered clear",
-    ticker: "Collapsible D leaves as the last boat successfully lowered from the davits.",
+    phase: "Last properly lowered boat",
+    ticker: "Collapsible D leaves from port as the last boat successfully lowered clear from the davits.",
     boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched", "2":"launched", "4":"launched", "D":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched" }
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched", "A":"loading" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "2":"launched", "10":"launched", "4":"launched", "D":"launched", "B":"loading" }
+    }
+  },
+  {
+    ats: "1912-04-15T02:15:00Z",
+    phase: "Washed-off collapsibles",
+    ticker: "Collapsibles A and B are washed from the deck as Titanic reaches the final stage of foundering.",
+    boats: {
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched", "A":"lost" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "2":"launched", "10":"launched", "4":"launched", "D":"launched", "B":"lost" }
     }
   },
   {
     ats: "1912-04-15T02:20:00Z",
     phase: "Ship foundered",
-    ticker: "Titanic sinks. Collapsibles A and B are washed off as the final plunge begins.",
+    ticker: "Titanic sinks. Survivors remain scattered in the lifeboats while collapsibles A and B drift away in chaotic conditions.",
     boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched", "2":"launched", "4":"launched", "D":"launched", "B":"lost" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched", "A":"lost" }
+      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched", "A":"lost" },
+      port: { "8":"launched", "6":"launched", "16":"launched", "14":"launched", "12":"launched", "2":"launched", "10":"launched", "4":"launched", "D":"launched", "B":"lost" }
     }
   }
 ].map(e => ({ ...e, atsMs: Date.parse(e.ats) }));
