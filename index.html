@@ -438,6 +438,34 @@
       margin: 0 auto 10px auto;
     }
 
+    .important-board{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  text-align:left;
+  color:#111;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.important-title{
+  font-size:15px;
+  font-weight:700;
+  color:#2a2a2a;
+  border-bottom:1px solid #b8ad8b;
+  padding-bottom:6px;
+}
+
+.important-time{
+  font-size:11px;
+  color:#444;
+}
+
+.important-text{
+  font-size:12px;
+  line-height:1.45;
+  color:#222;
+}
+
     @media (max-width: 900px) {
       .officer-card,
       .weather-card,
@@ -2865,62 +2893,96 @@ function buildSinkingBoard(displayedShipClock){
     </div>
   `;
 }
-/* =========================
-   DAILY RUN NOTICES (POSTED AT NOON)
-========================= */
 
-const RUN_NOTICES = {
-  "1912-04-11": `
-    <strong>Thursday 11 April 1912 - NOON</strong><br><br>
-    <strong>PASSENGER NOTICE</strong><br><br>
-    <strong>RMS TITANIC — DAILY RUN</strong><br><br>
-    Run from noon yesterday:   484 nautical miles<br>
-    Distance from Southampton:   484 nautical miles<br>
-    Distance to New York:   2,891 nautical miles<br><br>
-    Passengers are reminded that clocks will be set back tonight by 1 hour 24 minutes<br><br>
-    PURSER'S & ENQUIRY OFFICE<br>
-    Passengers may apply at the Enquiry Office for information, the deposit of valuables, and the arrangement of shipboard conveniences.
-  `,
+  /* ============================================
+   IMPORTANT INFORMATION BOARD (ATS-DRIVEN)
+============================================ */
 
-  "1912-04-12": `
-    <strong>Friday 12 April 1912 - NOON</strong><br><br>
-    <strong>PASSENGER NOTICE</strong><br><br>
-    <strong>RMS TITANIC — DAILY RUN</strong><br><br>
-    Run from noon yesterday:   519 nautical miles<br>
-    Distance from Southampton:   1,003 nautical miles<br>
-    Distance to New York:   2,406 nautical miles<br><br>
-    Passengers are reminded that clocks will be set back tonight by 49 minutes.<br><br>
-    ON DECK<br>
-    Passengers are invited to enjoy the promenade decks, where deck chairs and a brisk Atlantic air make for an agreeable afternoon
-  `,
+const IMPORTANT_INFO_EVENTS = [
+  {
+    ats: "1912-04-14T23:00:00Z",
+    title: "Important Information",
+    text: "Passengers are advised to keep life-belts close at hand and remain attentive to instructions from stewards and officers."
+  },
+  {
+    ats: "1912-04-14T23:40:00Z",
+    title: "Important Information",
+    text: "Titanic has struck an iceberg. Damage is being assessed; passengers are being kept calm while officers determine the seriousness of the situation."
+  },
+  {
+    ats: "1912-04-15T00:00:00Z",
+    title: "Important Information",
+    text: "Lifeboats are being uncovered and swung out. Passengers are being directed toward the boat deck in an orderly manner."
+  },
+  {
+    ats: "1912-04-15T00:25:00Z",
+    title: "Important Information",
+    text: "Distress calls are now being sent by wireless. Nearby ships have begun to answer."
+  },
+  {
+    ats: "1912-04-15T00:45:00Z",
+    title: "Important Information",
+    text: "The first lifeboats are leaving the ship. Many of the early boats are departing with spare capacity."
+  },
+  {
+    ats: "1912-04-15T01:20:00Z",
+    title: "Important Information",
+    text: "More lifeboats are now leaving in quick succession as evacuation gathers pace."
+  },
+  {
+    ats: "1912-04-15T01:45:00Z",
+    title: "Important Information",
+    text: "The situation on deck is becoming urgent. Distress traffic continues while the remaining boats are loaded."
+  },
+  {
+    ats: "1912-04-15T02:05:00Z",
+    title: "Important Information",
+    text: "The last successfully lowered boat has left. Final efforts are focused on the remaining collapsibles."
+  },
+  {
+    ats: "1912-04-15T02:20:00Z",
+    title: "Important Information",
+    text: "Titanic has foundered. Survivors remain in the lifeboats awaiting rescue."
+  }
+].map(e => ({ ...e, atsMs: Date.parse(e.ats) }));
 
-  "1912-04-13": `
-    <strong>Saturday 13 April 1912 - NOON</strong><br><br>
-    <strong>PASSENGER NOTICE</strong><br><br>
-    <strong>RMS TITANIC — DAILY RUN</strong><br><br>
-    Run from noon yesterday:   546 nautical miles<br>
-    Distance from Southampton:   1,549 nautical miles<br>
-    Distance to New York:   1,887 nautical miles<br><br>
-    Passengers are reminded that clocks will be set back tonight by 45 minutes.<br><br>
-    SUNDAY DIVINE SERVICE<br>
-    Divine Service is being held on SUNDAY morning at 10.30am in the First Class Dining Room, officiated by Captain E.J Smith. Services for Second and Third Class are being led by clergy aboard in relevant class sections.
-  `,
+function getCurrentImportantInfo(displayedShipClock){
+  const nowMs = displayedShipClock.getTime();
+  let current = null;
 
-  "1912-04-14": `
-    <strong>Sunday 14 April 1912 - NOON</strong><br><br>
-    <strong>PASSENGER NOTICE</strong><br><br>
-    <strong>RMS TITANIC — DAILY RUN</strong><br><br>
-    Run from noon yesterday:   546 nautical miles<br>
-    Distance from Southampton: 2,095 nautical miles<br>
-    Distance to New York:   1,341 nautical miles<br><br>
-    Passengers are reminded that clocks will be set back tonight by 47 minutes.<br><br>
-    MARCONI OFFICE<br>
-    Passenger telegram traffic is heavy as we are within range of North America stations.
-  `
-};
+  for(const evt of IMPORTANT_INFO_EVENTS){
+    if(evt.atsMs <= nowMs){
+      current = evt;
+    } else {
+      break;
+    }
+  }
 
-let lastRunNoticeKey = null;
+  return current;
+}
 
+function buildImportantInfoBoard(displayedShipClock){
+  const evt = getCurrentImportantInfo(displayedShipClock);
+
+  if(!evt){
+    return `
+      <div class="important-board">
+        <div class="important-title">Important Information</div>
+        <div class="important-time">${formatAtsMoment(displayedShipClock)}</div>
+        <div class="important-text">No urgent operational notices at this time.</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="important-board">
+      <div class="important-title">${evt.title}</div>
+      <div class="important-time">${formatAtsMoment(displayedShipClock)}</div>
+      <div class="important-text">${evt.text}</div>
+    </div>
+  `;
+}
+  
 function updateRunNotice(displayedShipClock){
   try{
     const y = displayedShipClock.getUTCFullYear();
@@ -2931,10 +2993,10 @@ function updateRunNotice(displayedShipClock){
     const noticeEl = document.getElementById("runNoticeText");
     if(!noticeEl) return;
 
-    const sinkingStartMs = Date.parse("1912-04-14T23:00:00Z");
+    const importantBoardStartMs = Date.parse("1912-04-14T23:00:00Z");
 
-    if(displayedShipClock.getTime() >= sinkingStartMs){
-      noticeEl.innerHTML = buildSinkingBoard(displayedShipClock);
+    if(displayedShipClock.getTime() >= importantBoardStartMs){
+      noticeEl.innerHTML = buildImportantInfoBoard(displayedShipClock);
       return;
     }
 
