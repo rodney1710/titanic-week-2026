@@ -2659,43 +2659,6 @@ function buildLifeboatMapPanel(displayedShipClock){
   `;
 }
 
-  const phase = evt ? evt.phase : 'Night watch';
-  const ticker = evt ? evt.ticker : 'Boat deck quiet.';
-
-  return `
-    <div class="sinking-board">
-      <div class="sinking-head">
-        <div class="sinking-title">Emergency Evacuation Board</div>
-        <div class="sinking-sub">${formatAtsMoment(displayedShipClock)}</div>
-        <div class="sinking-phase">${phase}</div>
-      </div>
-
-      <div class="boat-deck">
-        <div class="boat-column">
-          ${buildBoatColumn(PORT_DECK_ORDER, portStates, 'port')}
-        </div>
-
-        <div class="deck-centre">
-          <div class="deck-end">FORE</div>
-          <div class="deck-spine"></div>
-          <div class="deck-end">AFT</div>
-        </div>
-
-        <div class="boat-column">
-          ${buildBoatColumn(STARBOARD_DECK_ORDER, starboardStates, 'starboard')}
-        </div>
-      </div>
-
-      <div class="collapsible-strip">
-        ${buildCollapsibleSide('Port collapsibles', PORT_COLLAPSIBLES, portStates)}
-        ${buildCollapsibleSide('Starboard collapsibles', STARBOARD_COLLAPSIBLES, starboardStates)}
-      </div>
-
-      <div class="sinking-ticker">${ticker}</div>
-    </div>
-  `;
-}
-
   /* ============================================
    IMPORTANT INFORMATION BOARD (ATS-DRIVEN)
 ============================================ */
