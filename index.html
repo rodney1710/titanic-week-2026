@@ -2658,204 +2658,6 @@ function buildLifeboatMapPanel(displayedShipClock){
     </div>
   `;
 }
-  
- /* ============================================
-   SINKING PANEL TIMELINE
-============================================ */
-
-const SINKING_EVENTS = [
-  {
-    ats: "1912-04-14T23:00:00Z",
-    phase: "Night watch",
-    ticker: "Boat deck quiet. Most passengers remain indoors; lookouts and bridge watch continue in calm, moonless conditions."
-  },
-  {
-    ats: "1912-04-14T23:40:00Z",
-    phase: "Collision",
-    ticker: "Titanic collides with the iceberg. Officers begin assessing damage; many passengers are not yet fully alarmed."
-  },
-  {
-    ats: "1912-04-15T00:00:00Z",
-    phase: "Boats being readied",
-    ticker: "Lifeboats are being uncovered and swung out as the seriousness of the damage becomes clear."
-  },
-  {
-    ats: "1912-04-15T00:40:00Z",
-    phase: "First lifeboats launching",
-    ticker: "Boat 7 leaves from the starboard side — the first successful launch.",
-    boats: {
-      starboard: { "7":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T00:45:00Z",
-    phase: "Early launches",
-    ticker: "Boat 5 is lowered from starboard. The first boats are leaving with spare capacity.",
-    boats: {
-      starboard: { "7":"launched", "5":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T00:55:00Z",
-    phase: "Evacuation building",
-    ticker: "Boat 6 is launched on the port side and Boat 3 from starboard.",
-    boats: {
-      port: { "6":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T01:05:00Z",
-    phase: "More boats away",
-    ticker: "Boats 8 and 1 are away; the ship's initial starboard list is easing.",
-    boats: {
-      port: { "6":"launched", "8":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T01:20:00Z",
-    phase: "Lifeboats leaving more quickly",
-    ticker: "Boat 16 leaves the port side; Boat 9 follows from starboard as evacuation gathers pace.",
-    boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T01:30:00Z",
-    phase: "Mid-evacuation",
-    ticker: "Boat 14 goes from port. More passengers now understand that the ship is in real danger.",
-    boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T01:45:00Z",
-    phase: "Boat deck under pressure",
-    ticker: "Boats 13, 15, 2 and 11 are away in quick succession as the list and urgency increase.",
-    boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched", "2":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T02:00:00Z",
-    phase: "Final successful launches",
-    ticker: "Collapsible C is away. Boat 4 is lowered from port as the final clear chances to launch close.",
-    boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched", "2":"launched", "4":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T02:05:00Z",
-    phase: "Last boat lowered clear",
-    ticker: "Collapsible D leaves as the final boat successfully lowered from the davits.",
-    boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched", "2":"launched", "4":"launched", "D":"launched" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched" }
-    }
-  },
-  {
-    ats: "1912-04-15T02:20:00Z",
-    phase: "Ship foundered",
-    ticker: "Titanic sinks. Collapsibles A and B are washed off as the final plunge begins.",
-    boats: {
-      port: { "6":"launched", "8":"launched", "16":"launched", "14":"launched", "2":"launched", "4":"launched", "D":"launched", "B":"lost" },
-      starboard: { "7":"launched", "5":"launched", "3":"launched", "1":"launched", "9":"launched", "11":"launched", "13":"launched", "15":"launched", "C":"launched", "A":"lost" }
-    }
-  }
-].map(e => ({ ...e, atsMs: Date.parse(e.ats) }));
-
-const FORE_PORT_ROW = ["2","D","B"];
-const FORE_STARBOARD_ROW = ["1","C","A"];
-
-const PORT_MAIN_ROW = ["4","6","8","","10","12","14","16"];
-const STARBOARD_MAIN_ROW = ["3","5","7","","9","11","13","15"];
-
-function getCurrentSinkingState(displayedShipClock){
-  const nowMs = displayedShipClock.getTime();
-  let current = null;
-
-  for(const evt of SINKING_EVENTS){
-    if(evt.atsMs <= nowMs){
-      current = evt;
-    } else {
-      break;
-    }
-  }
-
-  return current;
-}
-
-function renderBoatOval(id, state, side){
-  const cls = state ? `boat-oval ${state}` : 'boat-oval';
-
-  if(side === 'port'){
-    return `
-      <div class="boat-row port">
-        <div class="boat-oval-wrap">
-          <div class="${cls}"></div>
-        </div>
-        <div class="boat-label-small">${id}</div>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="boat-row starboard">
-      <div class="boat-label-small">${id}</div>
-      <div class="boat-oval-wrap">
-        <div class="${cls}"></div>
-      </div>
-    </div>
-  `;
-}
-
-function buildBoatColumn(ids, states, side){
-  return ids.map(id => {
-    if(id === ""){
-      return `<div class="boat-gap"></div>`;
-    }
-    return renderBoatOval(id, states[id] || '', side);
-  }).join('');
-}
-
-function buildCollapsibleSide(label, ids, states){
-  return `
-    <div class="collapsible-side">
-      <div class="collapsible-label">${label}</div>
-      ${ids.map(id => {
-        const cls = states[id] ? `boat-oval ${states[id]}` : 'boat-oval';
-        return `
-          <div title="Boat ${id}" style="display:flex; align-items:center; gap:4px;">
-            <div class="${cls}"></div>
-            <div class="boat-label-small">${id}</div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
-
-function buildSinkingBoard(displayedShipClock){
-  const evt = getCurrentSinkingState(displayedShipClock);
-
-  const portStates = {};
-  const starboardStates = {};
-
-  for(const entry of SINKING_EVENTS){
-    if(entry.atsMs <= displayedShipClock.getTime() && entry.boats){
-      if(entry.boats.port){
-        Object.assign(portStates, entry.boats.port);
-      }
-      if(entry.boats.starboard){
-        Object.assign(starboardStates, entry.boats.starboard);
-      }
-    }
-  }
 
   const phase = evt ? evt.phase : 'Night watch';
   const ticker = evt ? evt.ticker : 'Boat deck quiet.';
@@ -2985,11 +2787,6 @@ function buildImportantInfoBoard(displayedShipClock){
   
 function updateRunNotice(displayedShipClock){
   try{
-    const y = displayedShipClock.getUTCFullYear();
-    const m = String(displayedShipClock.getUTCMonth() + 1).padStart(2,'0');
-    const d = String(displayedShipClock.getUTCDate()).padStart(2,'0');
-    const key = `${y}-${m}-${d}`;
-
     const noticeEl = document.getElementById("runNoticeText");
     if(!noticeEl) return;
 
@@ -3000,18 +2797,16 @@ function updateRunNotice(displayedShipClock){
       return;
     }
 
-    // Before noon → placeholder only
+    // Before 23:00 ATS, keep a simple normal notice
     if(displayedShipClock.getUTCHours() < 12){
       noticeEl.textContent = "Awaiting noon report…";
-      lastRunNoticeKey = null;
       return;
     }
 
-    // After noon → post today's notice once
-    if(RUN_NOTICES[key] && key !== lastRunNoticeKey){
-      noticeEl.innerHTML = RUN_NOTICES[key];
-      lastRunNoticeKey = key;
-    }
+    noticeEl.innerHTML = `
+      <strong>Passenger Notice</strong><br><br>
+      Routine service continues. Daily run and shipboard information remain posted here until the emergency information board replaces this notice at 11.00 p.m. ship's time.
+    `;
 
   }catch(e){
     console.warn("Run notice skipped:", e);
