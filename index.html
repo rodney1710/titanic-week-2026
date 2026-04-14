@@ -466,6 +466,35 @@
   color:#222;
 }
 
+    .daily-noon-board{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  text-align:left;
+  color:#111;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.daily-noon-date{
+  font-size:14px;
+  font-weight:700;
+  color:#2a2a2a;
+}
+
+.daily-noon-title{
+  font-size:13px;
+  font-weight:700;
+  color:#111;
+  text-transform:uppercase;
+  line-height:1.25;
+}
+
+.daily-noon-body{
+  font-size:12px;
+  line-height:1.5;
+  color:#222;
+}
+
     @media (max-width: 900px) {
       .officer-card,
       .weather-card,
@@ -2846,7 +2875,65 @@ function buildLifeboatMapPanel(displayedShipClock){
     </div>
   `;
 }
-  
+  const DAILY_NOON_DATA = {
+  "1912-04-11": {
+    dateLabel: "Thursday 11 April 1912",
+    runFromYesterday: "449 nm",
+    distanceFromSouthampton: "449 nm",
+    distanceToNewYork: "2,889 nm",
+    currentLocation: "51°43′N, 8°16′W",
+    clocksBackTonight: "84 minutes"
+  },
+  "1912-04-12": {
+    dateLabel: "Friday 12 April 1912",
+    runFromYesterday: "483 nm",
+    distanceFromSouthampton: "931 nm",
+    distanceToNewYork: "2,409 nm",
+    currentLocation: "50°06′N, 20°43′W",
+    clocksBackTonight: "49 minutes"
+  },
+  "1912-04-13": {
+    dateLabel: "Saturday 13 April 1912",
+    runFromYesterday: "519 nm",
+    distanceFromSouthampton: "1,450 nm",
+    distanceToNewYork: "1,890 nm",
+    currentLocation: "47°22′N, 33°10′W",
+    clocksBackTonight: "45 minutes"
+  },
+  "1912-04-14": {
+    dateLabel: "Sunday 14 April 1912",
+    runFromYesterday: "545 nm",
+    distanceFromSouthampton: "1,995 nm",
+    distanceToNewYork: "1,345 nm",
+    currentLocation: "43°02′N, 44°31′W",
+    clocksBackTonight: "0 minutes"
+  }
+};
+
+  function buildDailyNoonNotice(displayedShipClock){
+  const y = displayedShipClock.getUTCFullYear();
+  const m = String(displayedShipClock.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(displayedShipClock.getUTCDate()).padStart(2, '0');
+  const key = `${y}-${m}-${d}`;
+
+  const data = DAILY_NOON_DATA[key];
+  if(!data) return null;
+
+  return `
+    <div class="daily-noon-board">
+      <div class="daily-noon-date">${data.dateLabel} - NOON</div>
+      <div class="daily-noon-title">PASSENGER NOTICE - RMS TITANIC - DAILY RUN</div>
+
+      <div class="daily-noon-body">
+        Run from noon yesterday: <strong>${data.runFromYesterday}</strong><br>
+        Distance from Southampton: <strong>${data.distanceFromSouthampton}</strong><br>
+        Distance to New York: <strong>${data.distanceToNewYork}</strong><br>
+        Current Location: <strong>${data.currentLocation}</strong><br>
+        Passengers are reminded that clocks will be set back tonight by: <strong>${data.clocksBackTonight}</strong>
+      </div>
+    </div>
+  `;
+}
   /* ============================================
    IMPORTANT INFORMATION BOARD (ATS-DRIVEN)
 ============================================ */
@@ -2948,15 +3035,26 @@ function updateRunNotice(displayedShipClock){
       return;
     }
 
-    // Before 23:00 ATS, keep a simple normal notice
     if(displayedShipClock.getUTCHours() < 12){
       noticeEl.textContent = "Awaiting noon report…";
       return;
     }
 
+    const noonNoticeHtml = buildDailyNoonNotice(displayedShipClock);
+
+    if(noonNoticeHtml){
+      noticeEl.innerHTML = noonNoticeHtml;
+      return;
+    }
+
     noticeEl.innerHTML = `
-      <strong>Passenger Notice</strong><br><br>
-      Routine service continues. Daily run and shipboard information remain posted here until the emergency information board replaces this notice at 11.00 p.m. ship's time.
+      <div class="daily-noon-board">
+        <div class="daily-noon-date">Noon Notice</div>
+        <div class="daily-noon-title">PASSENGER NOTICE - RMS TITANIC - DAILY RUN</div>
+        <div class="daily-noon-body">
+          Daily run details unavailable for this date.
+        </div>
+      </div>
     `;
 
   }catch(e){
